@@ -1,0 +1,13 @@
+[user]
+	email = 9752193-a0v0@users.noreply.gitlab.com
+	name = aV
+	signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPnwLExCadN9GQetMZcaClmhFZuOuZYO1aPM1vaynD6r"
+[commit]
+	gpgsign = true
+[gpg]
+	format = ssh
+
+[credential "https://github.com"]
+	helper = !/home/linuxbrew/.linuxbrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = !/home/linuxbrew/.linuxbrew/bin/gh auth git-credential

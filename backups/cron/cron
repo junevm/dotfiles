@@ -1,0 +1,4 @@
+*/30 * * * * export SSH_AUTH_SOCK=/home/av/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock; /home/av/scripts/obsidian-sync-gitlab.sh >> /tmp/cron.log 2>&1
+
+
+

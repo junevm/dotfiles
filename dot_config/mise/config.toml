@@ -1,0 +1,52 @@
+[tasks."youtube-download"]
+description = "Download YouTube video in highest quality"
+usage = """
+arg "[url]" help="YouTube URL"
+"""
+dir = "{{cwd}}"
+run = """
+if [ -n "$usage_url" ]; then
+  URL="$usage_url"
+else
+  read -p 'YouTube URL: ' URL
+fi
+
+yt-dlp \
+  -f "bv*+ba/best" \
+  --merge-output-format mkv \
+  --embed-metadata \
+  --embed-thumbnail \
+  --add-metadata \
+  --write-info-json \
+  --output "%(title)s.%(ext)s" \
+  "$URL"
+"""
+
+
+[tasks.stats]
+description = "Show system stats with btop"
+run = "btop --force-utf"
+
+[tasks.upgrade]
+description = "Update system packages, Flatpak apps, and Homebrew packages"
+run = """
+sudo apt update &&
+sudo apt upgrade -y &&
+sudo apt autoremove -y &&
+sudo apt clean &&
+
+brew update &&
+brew upgrade &&
+brew cleanup -s
+
+flatpak update -y &&
+flatpak uninstall --unused -y &&
+"""
+
+[tasks.backup]
+description = "Backup system and sync vault"
+run = """
+cd ~/.local/share/chezmoi &&
+mise backup;
+~/scripts/obsidian-sync-gitlab.sh
+"""

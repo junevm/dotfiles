@@ -1,0 +1,6 @@
+mise.toml
+bin
+README.md
+backups
+*.deb
+bootstrap.sh

@@ -1,0 +1,210 @@
+[settings]
+quiet = true
+
+[env]
+BACKUP_DIR = "backups"
+OLD_USER = "av"
+NEW_USER = "av"
+
+[tasks.backup]
+description = "Backup system files and settings"
+run = [
+  "mise run backup:clean",
+  "mise run backup:gnome",
+  "mise run backup:homebrew",
+  "mise run backup:flatpak",
+  "mise run backup:shells",
+  "mise run backup:wallpapers",
+  "mise run backup:cron",
+  "mise run backup:fonts",
+  "mise run sync",
+]
+
+[tasks."backup:clean"]
+description = "Clean previous backup directory"
+run = ["echo 🗑️ Cleaning previous backup...", "rm -rf $BACKUP_DIR"]
+
+[tasks."backup:gnome"]
+description = "Backup GNOME settings"
+run = [
+  "echo 🧠 Backing up GNOME settings...",
+  "mkdir -p $BACKUP_DIR/gnome",
+  "dconf dump /org/gnome/ > $BACKUP_DIR/gnome/settings.ini",
+  "gnome-extensions list --enabled --user > $BACKUP_DIR/gnome/extensions.txt",
+  "echo 📦 Backing up enabled extension directories...",
+  "rm -rf $BACKUP_DIR/gnome/extensions",
+  "mkdir -p $BACKUP_DIR/gnome/extensions",
+  "gnome-extensions list --enabled --user | while read ext; do if [ -d \"$HOME/.local/share/gnome-shell/extensions/$ext\" ]; then cp -r \"$HOME/.local/share/gnome-shell/extensions/$ext\" $BACKUP_DIR/gnome/extensions/; fi done",
+]
+
+[tasks."backup:homebrew"]
+description = "Backup Homebrew packages"
+run = [
+  "echo 🍺 Backing up Homebrew packages...",
+  "mkdir -p $BACKUP_DIR/brew",
+  "/home/linuxbrew/.linuxbrew/bin/brew bundle dump --no-vscode --file=$BACKUP_DIR/brew/Brewfile --force",
+]
+
+[tasks."backup:flatpak"]
+description = "Backup Flatpak apps"
+run = [
+  "echo 📦 Backing up Flatpak apps...",
+  "mkdir -p $BACKUP_DIR/flatpak",
+  "flatpak list --app --columns=application > $BACKUP_DIR/flatpak/apps.txt",
+]
+
+[tasks."backup:shells"]
+description = "Backup /etc/shells"
+run = [
+  "echo 🛡️ Backing up /etc/shells...",
+  "mkdir -p $BACKUP_DIR/shells",
+  "cat /etc/shells > $BACKUP_DIR/shells/shells",
+]
+
+[tasks."backup:wallpapers"]
+description = "Backup wallpapers directory"
+run = [
+  "echo 🖼️ Backing up wallpapers...",
+  "rm -rf $BACKUP_DIR/wallpapers",
+  "mkdir -p $BACKUP_DIR/wallpapers",
+  "cp -r ~/Pictures/Wallpapers/* $BACKUP_DIR/wallpapers/ 2>/dev/null || true",
+]
+
+[tasks."backup:cron"]
+description = "Backup user crontab to backups/cron/cron"
+run = [
+  "echo 📝 Backing up user crontab to $BACKUP_DIR/cron/cron...",
+  "mkdir -p $BACKUP_DIR/cron",
+  "crontab -l > $BACKUP_DIR/cron/cron || echo '# No crontab for this user' > $BACKUP_DIR/cron/cron",
+  "echo ✅ User crontab backed up.",
+]
+
+[tasks."backup:fonts"]
+description = "Backup user fonts"
+run = [
+  "echo 🔤 Backing up user fonts...",
+  "rm -rf $BACKUP_DIR/fonts",
+  "mkdir -p $BACKUP_DIR/fonts",
+  "cp -r ~/.local/share/fonts/* $BACKUP_DIR/fonts/ 2>/dev/null || true",
+]
+
+[tasks."restore:fonts"]
+description = "Restore user fonts"
+run = [
+  "echo 🔤 Restoring user fonts...",
+  "mkdir -p ~/.local/share/fonts",
+  "cp -r $BACKUP_DIR/fonts/* ~/.local/share/fonts/ 2>/dev/null || true",
+  "fc-cache -f ~/.local/share/fonts",
+  "echo ✅ User fonts restored.",
+]
+
+[tasks.sync]
+description = ""
+run = [
+  "echo 🔄 Applying chezmoi changes...",
+  "chezmoi apply -v",
+  "echo 🔄 Pushing changes...",
+  "git add .",
+  "git commit -m \"chezmoi - update $(date '+%B %e, %Y %I:%M %p')\"",
+  "git push",
+  "echo ✅ Changes pushed to the repository.",
+]
+
+[tasks.restore]
+description = "Restore system files and settings"
+run = [
+  "mise run replace-hardcoded-values",
+  "mise run install-apps-packages",
+  "mise run restore:gnome",
+  "mise run restore:shells",
+  "mise run restore:wallpapers",
+  "mise run restore:cron",
+  "mise run debloat",
+  "echo 🔄 Switching to SSH remote...",
+  "git remote set-url origin git@github.com:junevm/dotfiles.git",
+  "echo 🎉 Restore completed. Please reboot your system to apply all changes.",
+]
+
+[tasks."install-apps-packages"]
+description = "Install apps and packages"
+run = [
+  "echo 📋 Installing system packages...",
+  "sudo apt install -y uidmap gnome-tweaks synaptic build-essential stacer",
+  # "wget --show-progress -O fdm.deb https://files2.freedownloadmanager.org/6/latest/freedownloadmanager.deb && sudo apt install -y ./fdm.deb && rm fdm.deb",
+  "wget -qO- https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && echo 'deb [arch=amd64,arm64,armhf] https://packages.microsoft.com/repos/code stable main' | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null && sudo apt update && sudo apt install -y code && wget -qO- https://gist.github.com/junevm/c04191495e5c89cbc08de7fe35d93efb/raw/c92f2771852bb3a4f185f6eff68ca2fb65091c29/code-nautilus.sh | bash",
+  "echo 📦 Installing Flatpak apps...",
+  "while IFS= read -r app; do flatpak install -y --noninteractive flathub \"$app\" || true; done < $BACKUP_DIR/flatpak/apps.txt",
+  "echo 🍺 Installing and restoring Homebrew packages...",
+  "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\" && eval \"$($([ -d /home/linuxbrew/.linuxbrew ] && echo /home/linuxbrew/.linuxbrew/bin/brew || echo /opt/homebrew/bin/brew) shellenv)\"",
+  "/home/linuxbrew/.linuxbrew/bin/brew bundle --file=$BACKUP_DIR/brew/Brewfile",
+  "/home/linuxbrew/.linuxbrew/bin/brew services start syncthing",
+  "echo 🐳 Installing Docker...",
+  "curl -fsSL get.docker.com | bash",
+  "dockerd-rootless-setuptool.sh install",
+  "/home/linuxbrew/.linuxbrew/bin/go install github.com/junevm/msifancontrol/cmd/fan@latest",
+  "/home/linuxbrew/.linuxbrew/bin/pipx install git+https://github.com/bayasdev/envycontrol.git",
+  "sudo ~/.local/bin/envycontrol -s integrated",
+]
+
+[tasks."restore:gnome"]
+description = "Restore GNOME settings and themes"
+run = [
+  "echo ♻️ Restoring GNOME settings and extensions...",
+  "echo 📦 Restoring extension directories...",
+  "mkdir -p ~/.local/share/gnome-shell/extensions",
+  "if [ -d \"$BACKUP_DIR/gnome/extensions\" ]; then cp -r $BACKUP_DIR/gnome/extensions/* ~/.local/share/gnome-shell/extensions/ 2>/dev/null || true; echo ✅ Extension directories restored; else echo ⚠️  No extension directories to restore; fi",
+  "dconf load /org/gnome/ < $BACKUP_DIR/gnome/settings.ini",
+]
+
+[tasks."restore:shells"]
+description = "Restore shells and set Fish as default"
+run = [
+  "echo 🐟 Setting Fish shell as default...",
+  "sudo cp $BACKUP_DIR/shells/shells /etc/shells",
+  "chsh -s /home/linuxbrew/.linuxbrew/bin/fish",
+]
+
+[tasks."restore:wallpapers"]
+description = "Restore wallpapers directory"
+run = [
+  "echo 🖼️ Restoring wallpapers...",
+  "rm -rf ~/Pictures/Wallpapers",
+  "mkdir -p ~/Pictures/Wallpapers",
+  "cp -r $BACKUP_DIR/wallpapers/* ~/Pictures/Wallpapers/ 2>/dev/null || true",
+]
+
+[tasks."restore:cron"]
+description = "Restore user cron jobs from backups/cron/cron file"
+run = [
+  "echo 📋 Restoring user cron jobs from backups/cron/cron file...",
+  "crontab backups/cron/cron",
+  "echo ✅ User cron jobs restored. Run 'crontab -l' to verify.",
+]
+
+[tasks.debloat]
+description = "Cleanup the bloat"
+run = [
+  "echo 🧹 Cleaning up preinstalled packages...",
+  "for pkg in brave-browser evince; do sudo apt remove -y \"$pkg\" || true; done",
+  "sudo apt remove --purge libreoffice* -y || true",
+  "sudo apt autoremove -y",
+  "dpkg -l totem gedit brasero gnome-weather gnome-system-monitor simple-scan seahorse gnome-clocks eog cheese evolution gnome-calendar 2>/dev/null | grep '^ii' | awk '{print $2}' | xargs -r sudo apt remove --purge -y && sudo apt autoremove --purge -y",
+  "echo 🧹 Removing trace of snap...",
+  "sudo apt remove --purge -y snapd gnome-software-plugin-snap",
+  "sudo rm -rf ~/snap /snap /var/snap /var/lib/snapd /var/cache/snapd ~/bin",
+  "echo  ✅ Debloat completed.",
+]
+
+[tasks."replace-hardcoded-values"]
+description = "Replace hardcoded username paths with current user"
+env = { OLD_PATH = "/home/$OLD_USER", NEW_PATH = "/home/$NEW_USER" }
+run = [
+  "echo 🛠️  Replacing hardcoded username paths...",
+  "echo 🏠 Target user: $NEW_USER",
+  "echo 🔎 Searching for hardcoded paths: $OLD_PATH",
+  "files=$(grep -rIl --exclude='taskfile.*' '$OLD_PATH' . 2>/dev/null | grep -v '.git' || true)",
+  "if [ -z \"$files\" ]; then echo ✅ No hardcoded paths found; else echo 📝 Files to update:; echo \"$files\" | sed 's/^/  - /'; echo ''; echo \"$files\" | while read -r file; do if [ -f \"$file\" ]; then echo 🔧 Updating: $file; sed -i 's|$OLD_PATH|$NEW_PATH|g' \"$file\"; fi done; echo ✅ Path replacement completed; fi",
+  "echo 🔄 Checking changes with chezmoi...",
+  "~/bin/chezmoi diff",
+  "~/bin/chezmoi apply --force",
+]
