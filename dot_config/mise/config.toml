@@ -29,19 +29,12 @@ run = "btop --force-utf"
 
 [tasks.upgrade]
 description = "Update system packages, Flatpak apps, and Homebrew packages"
-run = """
-sudo apt update &&
-sudo apt upgrade -y &&
-sudo apt autoremove -y &&
-sudo apt clean &&
+run = [
+  "sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y && sudo apt clean",
+  "brew update && brew upgrade && brew cleanup -s",
+  "flatpak update -y && flatpak uninstall --unused -y",
+]
 
-brew update &&
-brew upgrade &&
-brew cleanup -s
-
-flatpak update -y &&
-flatpak uninstall --unused -y &&
-"""
 
 [tasks.backup]
 description = "backup dotfiles and obsidian vault"
