@@ -1,33 +1,35 @@
-# ⚙️ Dotfiles
+# dotfiles
 
-Personal Linux configuration managed with [chezmoi](https://www.chezmoi.io/) and [Task](https://taskfile.dev/).
+personal configurations for a clean fedora-based environment.
 
-## 📦 What's Included
+## included
 
-- GNOME settings & extensions
-- System packages (APT, Homebrew, Flatpak)
-- Dotfiles (Fish shell, Git config, Starship)
-- Wallpapers, scripts & cron jobs
+- gnome settings & extensions
+- system packages (apt, homebrew, flatpak)
+- shell configs (fish, git, starship)
+- wallpapers, scripts & cron jobs
 
-## 🚀 Setup
+## setup
 
-### Restore on new machine
+### prerequisites
 
-Run the following command to set up a new machine:
+- [chezmoi](https://www.chezmoi.io/)
+- [git](https://git-scm.com/downloads)
+- [mise-en-place](https://mise.jdx.dev/)
+
+### install
 
 ```bash
 curl -fsSL https://github.com/junevm/dotfiles/raw/refs/heads/main/bootstrap.sh | bash
 ```
 
-### Backup from current machine
-
-Run the following command to back up your current configuration:
+### sync
 
 ```bash
-cd ~/.local/share/chezmoi && task backup
+cd ~/.local/share/chezmoi && mise run backup
 ```
 
-## 💡 Notes
+## notes
 
-- Target OS: Fedora
-- Reboot after restore for full effect
+- target os: fedora
+- reboot after restore for full effect
