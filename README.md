@@ -16,7 +16,7 @@ Personal Linux configuration managed with [chezmoi](https://www.chezmoi.io/) and
 Run the following command to set up a new machine:
 
 ```bash
-curl -fsSL https://gitlab.com/junevm/dotfiles/-/raw/main/bootstrap.sh | bash
+curl -fsSL https://github.com/junevm/dotfiles/raw/refs/heads/main/bootstrap.sh | bash
 ```
 
 ### Backup from current machine
