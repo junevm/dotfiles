@@ -46,6 +46,6 @@ flatpak uninstall --unused -y &&
 [tasks.backup]
 description = "backup dotfiles and obsidian vault"
 run = [
-  "echo 'backing up dotfiles...' && cd ~/.local/share/chezmoi && mise backup;",
   "echo 'backing up obsidian vault...' && ~/scripts/backup-obsidian.sh",
+  "echo 'backing up dotfiles...' && cd ~/.local/share/chezmoi && mise backup;",
 ]
