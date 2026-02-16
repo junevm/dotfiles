@@ -31,5 +31,5 @@ cd ~/.local/share/chezmoi && mise run backup
 
 ## notes
 
-- target os: fedora
+- target os: zorin os 18
 - reboot after restore for full effect
