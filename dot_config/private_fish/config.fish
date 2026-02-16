@@ -3,6 +3,7 @@ set fish_greeting ""
 
 # edit files with the default application
 alias edit="gio open" 
+alias fan="msifancontrol"
 
 # Add paths
 fish_add_path ~/Android/Sdk/platform-tools

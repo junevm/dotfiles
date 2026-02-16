@@ -141,7 +141,6 @@ run = [
   "echo 🐳 Installing Docker...",
   "curl -fsSL get.docker.com | bash",
   "dockerd-rootless-setuptool.sh install",
-  "/home/linuxbrew/.linuxbrew/bin/go install github.com/junevm/msifancontrol/cmd/fan@latest",
   "/home/linuxbrew/.linuxbrew/bin/pipx install git+https://github.com/bayasdev/envycontrol.git",
   "sudo ~/.local/bin/envycontrol -s integrated",
 ]
