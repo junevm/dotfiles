@@ -9,19 +9,19 @@ Prerequisites: `curl`, `sudo`, internet access.
 Install for CachyOS (`main`):
 
 ```bash
-sh -c "$(curl -fsSL https://gitlab.com/junevm/dotfiles/-/raw/main/bootstrap.sh)"
+sh -c "$(curl -fsSL https://github.com/junevm/dotfiles/raw/refs/heads/main/bootstrap.sh)"
 ```
 
 Install for Zorin (`zorin`):
 
 ```bash
-sh -c "$(curl -fsSL https://gitlab.com/junevm/dotfiles/-/raw/zorin/bootstrap.sh)"
+sh -c "$(curl -fsSL https://github.com/junevm/dotfiles/raw/refs/heads/zorin/bootstrap.sh)"
 ```
 
 Optional custom repo URL (set branch with `DOTFILES_BRANCH`):
 
 ```bash
-DOTFILES_BRANCH=main DOTFILES_REPO_URL=https://gitlab.example.com/junevm/dotfiles.git sh -c "$(curl -fsSL https://gitlab.com/junevm/dotfiles/-/raw/$DOTFILES_BRANCH/bootstrap.sh)"
+DOTFILES_BRANCH=main DOTFILES_REPO_URL=https://github.com/junevm/dotfiles.git sh -c "$(curl -fsSL https://github.com/junevm/dotfiles/raw/refs/heads/$DOTFILES_BRANCH/bootstrap.sh)"
 ```
 
 ## Daily use
