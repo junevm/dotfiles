@@ -1,0 +1,151 @@
+[tasks."youtube-download"]
+alias = "ytdl"
+description = "Download YouTube video in highest quality"
+usage = """
+arg "[url]" help="YouTube URL"
+"""
+dir = "{{cwd}}"
+run = """
+if [ -n "$usage_url" ]; then
+  URL="$usage_url"
+else
+  read -p 'YouTube URL: ' URL
+fi
+
+yt-dlp \
+  -f "bv*+ba/best" \
+  --merge-output-format mkv \
+  --embed-metadata \
+  --embed-thumbnail \
+  --add-metadata \
+  --write-info-json \
+  --output "%(title)s.%(ext)s" \
+  "$URL"
+"""
+
+
+[tasks.stats]
+description = "Show system stats with btop"
+run = "btop --force-utf"
+
+[tasks.upgrade]
+alias = "up"
+description = "Do a full system upgrade"
+run = [
+  "if command -v paru >/dev/null 2>&1; then paru -Syu --noconfirm; else sudo pacman -Syu --noconfirm; fi",
+  "if command -v paccache >/dev/null 2>&1; then sudo paccache -r -k 2 || true; fi",
+  "flatpak update -y && flatpak uninstall --unused -y",
+  "BREW_BIN=$(command -v brew || true); if [ -z \"$BREW_BIN\" ]; then [ -x /home/linuxbrew/.linuxbrew/bin/brew ] && BREW_BIN=/home/linuxbrew/.linuxbrew/bin/brew; fi; if [ -n \"$BREW_BIN\" ]; then \"$BREW_BIN\" update && \"$BREW_BIN\" upgrade && \"$BREW_BIN\" cleanup -s; fi",
+]
+
+[tasks.backup]
+alias = "bk"
+description = "backup dotfiles and obsidian vault"
+run = [
+  "echo 'backing up vault...' && ~/scripts/backup-obsidian.sh",
+  "echo 'backing up dotfiles...' && cd ~/.local/share/chezmoi && mise run backup",
+]
+
+[tasks.fan]
+description = "Control fan speed with msifancontrol"
+run = "msifancontrol"
+
+[tasks.dns]
+description = "Change DNS interactively using cdns"
+run = "cdns"
+
+[tasks.gpu]
+description = "Interactive GPU mode selector (status/integrated/hybrid/nvidia)"
+run = """
+set -u
+
+# mise task shells may not source interactive shell config.
+export PATH="$HOME/.local/bin:$PATH"
+
+pick_mode() {
+  if command -v fzf >/dev/null 2>&1; then
+    printf '%s\n' status integrated hybrid nvidia | fzf --prompt='GPU mode > ' --height=10 --reverse --border
+    return
+  fi
+
+  echo "fzf not found; using fallback selection."
+  select mode in status integrated hybrid nvidia; do
+    printf '%s\n' "$mode"
+    return
+  done
+}
+
+switch_mode() {
+  mode="$1"
+  echo "Switching to $mode mode."
+  echo "This may take 1-3 minutes while initramfs is rebuilt. Please wait..."
+
+  sudo "$ENVYCONTROL_BIN" --switch "$mode" &
+  SWITCH_PID=$!
+
+  while kill -0 "$SWITCH_PID" >/dev/null 2>&1; do
+    printf '.'
+    sleep 5
+  done
+  echo
+
+  wait "$SWITCH_PID"
+}
+
+ENVYCONTROL_BIN="$(command -v envycontrol || true)"
+if [ -z "$ENVYCONTROL_BIN" ]; then
+  echo "envycontrol not found in PATH: $PATH"
+  exit 1
+fi
+
+echo "Current GPU mode:"
+"$ENVYCONTROL_BIN" --query || true
+
+MODE="$(pick_mode)"
+
+case "$MODE" in
+  status)
+    echo "Current GPU mode:"
+    "$ENVYCONTROL_BIN" --query
+    ;;
+  integrated|hybrid|nvidia)
+    if switch_mode "$MODE"; then
+      echo "Switched to $MODE mode. Reboot is recommended."
+    else
+      echo "Failed to switch to $MODE mode."
+      exit 1
+    fi
+    ;;
+  *)
+    echo "No valid selection made; exiting."
+    exit 1
+    ;;
+esac
+"""
+
+
+[tasks."git:add-commit"]
+alias = "gac"
+description = "git add and commit"
+run = '''
+read -p "Enter commit message: " msg
+git add .
+git commit -m "$msg"
+echo "changes staged and committed with message: $msg"
+'''
+
+
+[tasks."git:pull"]
+alias = "gp"
+description = "git pull"
+run = '''
+git pull
+'''
+
+[tasks."git:ignore-fix"]
+alias = "gigfix"
+description = "fix gitignore not working https://stackoverflow.com/questions/25436312/gitignore-not-working"
+run = '''
+git rm -rf --cached .
+git add .
+'''

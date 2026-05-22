@@ -1,0 +1,1 @@
+*/30 * * * * export SSH_AUTH_SOCK=/home/junemv/.bitwarden-ssh-agent.sock; /home/av/scripts/backup-obsidian.sh >> /tmp/cron.log 2>&1

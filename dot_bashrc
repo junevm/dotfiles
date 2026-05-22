@@ -1,0 +1,16 @@
+#
+# ~/.bashrc
+#
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias docker='podman'
+PS1='[\u@\h \W]\$ '
+
+export SSH_AUTH_SOCK="/home/junevm/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock" # if bitwarden installed via flatpak
+# export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock" # if bitwarden installed via native package manager
+# Added by GDK bootstrap
+eval "$(/home/junevm/.local/bin/mise activate bash)"

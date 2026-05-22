@@ -1,0 +1,279 @@
+{
+   "checksum": "d8f19061ffc138dc4a20b98c450a58a7",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "children": [ {
+               "date_added": "13417261133765102",
+               "date_last_used": "13420979555323686",
+               "guid": "ca9f7b5c-d611-4068-ae5b-ae9f4262041e",
+               "id": "8",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "a.111477.xyz",
+               "type": "url",
+               "url": "https://a.111477.xyz/"
+            }, {
+               "date_added": "13418568026972377",
+               "date_last_used": "13419175285826714",
+               "guid": "fcc20168-648d-4a50-ac25-7807bf33edf4",
+               "id": "9",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "Games List » SteamRIP",
+               "type": "url",
+               "url": "https://steamrip.com/games-list-page/"
+            }, {
+               "date_added": "13415114246886846",
+               "date_last_used": "13419076229583820",
+               "guid": "bbcffda3-164a-4ae1-b532-d4fb86915ffc",
+               "id": "6",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "freemediaheckyeah",
+               "type": "url",
+               "url": "https://fmhy.net/"
+            }, {
+               "date_added": "13421583628344683",
+               "date_last_used": "13422626206740718",
+               "guid": "9ee56467-a043-4d46-b22c-ee69ee7b5a88",
+               "id": "35",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "PixelDrain Bypass - High Speed Link Generator | Speed Limit bypass",
+               "type": "url",
+               "url": "https://pixeldrain-bypass.gamedrive.org/"
+            }, {
+               "date_added": "13421909103654609",
+               "date_last_used": "13422303210363037",
+               "guid": "a24a68c7-2a9e-4286-b117-d42b20038b34",
+               "id": "39",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "Rezi",
+               "type": "url",
+               "url": "https://rezi.one/"
+            }, {
+               "date_added": "13421909843608863",
+               "date_last_used": "0",
+               "guid": "9de78ad9-5654-4b41-8064-a5d0b81835f3",
+               "id": "40",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "Pirated Games Mega Thread",
+               "type": "url",
+               "url": "https://rentry.org/pgames#direct-download-ddl-sites"
+            }, {
+               "date_added": "13421944792939117",
+               "date_last_used": "0",
+               "guid": "9c5cddf6-2e44-4cf2-900c-07d3b0a0e67b",
+               "id": "42",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "HowLongToBeat.com | Game Lengths, Backlogs and more!",
+               "type": "url",
+               "url": "https://howlongtobeat.com/"
+            }, {
+               "date_added": "13421946437550155",
+               "date_last_used": "0",
+               "guid": "80b18121-c08d-4df4-84c0-b31c58101c48",
+               "id": "44",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "AnkerGames - Free Pre-installed PC Games",
+               "type": "url",
+               "url": "https://ankergames.net/"
+            }, {
+               "date_added": "13422750678501733",
+               "date_last_used": "0",
+               "guid": "5d200fc1-ea20-4b14-a12d-9d9f39eeaedb",
+               "id": "50",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "Is ROMSFUN.COM safe? | ROMSFUN.COM",
+               "type": "url",
+               "url": "https://romsfun.com/is-romsfun-com-safe/"
+            } ],
+            "date_added": "13419234390380119",
+            "date_last_used": "0",
+            "date_modified": "13422750681535909",
+            "guid": "292dc790-d4cf-4aa4-b8c8-13f4484c1668",
+            "id": "22",
+            "name": "pirate",
+            "type": "folder"
+         }, {
+            "children": [ {
+               "date_added": "13419015137657095",
+               "date_last_used": "13419790382907069",
+               "guid": "502d3983-f320-46a0-a56c-20d6a0ea61ac",
+               "id": "14",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "Shruti Sonali — Non Linear Creative",
+               "type": "url",
+               "url": "https://www.portfoliobyshruti.com/"
+            } ],
+            "date_added": "13419015157441513",
+            "date_last_used": "0",
+            "date_modified": "13419115324923038",
+            "guid": "0acb903c-b980-4c70-8d7d-4b681ae23f9e",
+            "id": "15",
+            "name": "inspiration",
+            "type": "folder"
+         }, {
+            "children": [ {
+               "date_added": "13419488749790612",
+               "date_last_used": "13420401427669255",
+               "guid": "6462d190-29bc-468c-8a70-7674ba703ab6",
+               "id": "24",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "dashboard",
+               "type": "url",
+               "url": "https://gitlab.com/avm-org/mill/avtoolz"
+            }, {
+               "date_added": "13419488783861919",
+               "date_last_used": "13420401424899465",
+               "guid": "7fca29f2-2bc4-4077-a516-a7823386c565",
+               "id": "26",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "cycles",
+               "type": "url",
+               "url": "https://gitlab.com/avm-org/mill/avtoolz/-/milestones"
+            }, {
+               "date_added": "13419488789311812",
+               "date_last_used": "13421129111444827",
+               "guid": "6c4ee06e-e057-4507-8af0-ecf4193d4fcd",
+               "id": "27",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "board",
+               "type": "url",
+               "url": "https://gitlab.com/avm-org/mill/avtoolz/-/boards/9764917"
+            } ],
+            "date_added": "13419488769223085",
+            "date_last_used": "0",
+            "date_modified": "13419488789311812",
+            "guid": "751a4f3f-17e4-400b-81c7-80491b60dc54",
+            "id": "25",
+            "name": "avtoolz",
+            "type": "folder"
+         }, {
+            "date_added": "13412852127215635",
+            "date_last_used": "13422750597458051",
+            "guid": "82b89bbe-bdf9-4e5a-8518-919a940a2a52",
+            "id": "5",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "syncthing",
+            "type": "url",
+            "url": "http://127.0.0.1:8384/"
+         }, {
+            "children": [ {
+               "date_added": "13420210042155602",
+               "date_last_used": "0",
+               "guid": "1e3f4b00-ee16-4a8a-9b78-e47ab63c1239",
+               "id": "29",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "GitZip",
+               "type": "url",
+               "url": "https://kinolien.github.io/gitzip/#"
+            }, {
+               "date_added": "13420991116224861",
+               "date_last_used": "0",
+               "guid": "a712e2b0-cc2c-470d-a6d2-d7191e2490d6",
+               "id": "32",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "⚡️Syntax Highlighter - Quick highlight Code for Editor (Customized by Shigeඞ) - AnkiWeb",
+               "type": "url",
+               "url": "https://ankiweb.net/shared/info/272582198"
+            }, {
+               "date_added": "13421596334735083",
+               "date_last_used": "13421671222739514",
+               "guid": "eb665aff-21e6-45bc-9419-c635723433d3",
+               "id": "37",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "Wayback Machine",
+               "type": "url",
+               "url": "https://web.archive.org/save"
+            } ],
+            "date_added": "13420210054349864",
+            "date_last_used": "0",
+            "date_modified": "13421909103654609",
+            "guid": "6d0d183d-a4fb-44d4-9a40-f829be323eee",
+            "id": "30",
+            "name": "tools",
+            "type": "folder"
+         }, {
+            "children": [ {
+               "date_added": "13422511522428453",
+               "date_last_used": "0",
+               "guid": "e3ee6b8e-77a7-418b-9475-197351cbc59c",
+               "id": "46",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "Leetbot Data Explorer",
+               "type": "url",
+               "url": "https://leetbot.org/"
+            } ],
+            "date_added": "13422511568607120",
+            "date_last_used": "0",
+            "date_modified": "13422750678501733",
+            "guid": "36339ebb-7c33-43ce-896e-c327d12ea72d",
+            "id": "48",
+            "name": "academics",
+            "type": "folder"
+         } ],
+         "date_added": "13418883539294680",
+         "date_last_used": "0",
+         "date_modified": "13420210042155602",
+         "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
+         "id": "1",
+         "name": "Bookmarks bar",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13418883539294680",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
+         "id": "2",
+         "name": "Other bookmarks",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13418883539294680",
+         "date_last_used": "0",
+         "date_modified": "13421583615567009",
+         "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
+         "id": "3",
+         "name": "Mobile bookmarks",
+         "type": "folder"
+      }
+   },
+   "version": 1
+}

@@ -1,0 +1,13 @@
+appindicatorsupport@rgcjonas.gmail.com
+azwallpaper@azwallpaper.gitlab.com
+blur-my-shell@aunetx
+clipboard-indicator@tudmotu.com
+GPU_profile_selector@lorenzo9904.gmail.com
+gsconnect@andyholmes.github.io
+gtk4-ding@smedius.gitlab.com
+places-menu@gnome-shell-extensions.gcampax.github.com
+compiz-windows-effect@hermes83.github.com
+compiz-alike-magic-lamp-effect@hermes83.github.com
+user-theme@gnome-shell-extensions.gcampax.github.com
+drive-menu@gnome-shell-extensions.gcampax.github.com
+add-to-desktop@tommimon.github.com
