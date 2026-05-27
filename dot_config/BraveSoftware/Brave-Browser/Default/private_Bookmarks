@@ -1,5 +1,5 @@
 {
-   "checksum": "d8f19061ffc138dc4a20b98c450a58a7",
+   "checksum": "29e2f617452851994d0a6c95db906caf",
    "roots": {
       "bookmark_bar": {
          "children": [ {
@@ -105,7 +105,7 @@
             } ],
             "date_added": "13419234390380119",
             "date_last_used": "0",
-            "date_modified": "13422750681535909",
+            "date_modified": "13424246763347279",
             "guid": "292dc790-d4cf-4aa4-b8c8-13f4484c1668",
             "id": "22",
             "name": "pirate",
@@ -122,10 +122,21 @@
                "name": "Shruti Sonali — Non Linear Creative",
                "type": "url",
                "url": "https://www.portfoliobyshruti.com/"
+            }, {
+               "date_added": "13424320608882993",
+               "date_last_used": "0",
+               "guid": "cb92c8a9-d573-43bd-b0a7-b41c37b8fc9b",
+               "id": "56",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "40+ AI Image Prompt Styles to Transform Your Photos into Art",
+               "type": "url",
+               "url": "https://getdigitalresults.com/gen-ai/ai-image-prompt-styles/"
             } ],
             "date_added": "13419015157441513",
             "date_last_used": "0",
-            "date_modified": "13419115324923038",
+            "date_modified": "13424320618309605",
             "guid": "0acb903c-b980-4c70-8d7d-4b681ae23f9e",
             "id": "15",
             "name": "inspiration",
@@ -245,10 +256,43 @@
             "id": "48",
             "name": "academics",
             "type": "folder"
+         }, {
+            "date_added": "13424246763347279",
+            "date_last_used": "0",
+            "guid": "0d0890d7-7ab2-41a0-bfd7-b244d6bc73b5",
+            "id": "52",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "Merge Intervals - LeetCode",
+            "type": "url",
+            "url": "https://leetcode.com/problems/merge-intervals/description/"
+         }, {
+            "date_added": "13424246772569137",
+            "date_last_used": "0",
+            "guid": "56aa7d3e-917a-473a-b99e-d28791b255db",
+            "id": "53",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "Insert Interval - LeetCode",
+            "type": "url",
+            "url": "https://leetcode.com/problems/insert-interval/description/"
+         }, {
+            "date_added": "13424246781850240",
+            "date_last_used": "0",
+            "guid": "28a5be69-7712-4ed6-b8e7-b7b2a3a19992",
+            "id": "54",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "Non-overlapping Intervals - LeetCode",
+            "type": "url",
+            "url": "https://leetcode.com/problems/non-overlapping-intervals/description/"
          } ],
          "date_added": "13418883539294680",
          "date_last_used": "0",
-         "date_modified": "13420210042155602",
+         "date_modified": "13424320608882993",
          "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
          "id": "1",
          "name": "Bookmarks bar",

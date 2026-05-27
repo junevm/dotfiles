@@ -10,7 +10,7 @@ RESTORE_STATE_SUBDIR = ".local/state/dotfiles/restore"
 # Space-separated package names only.
 # Single source of truth for install targets (repo + AUR mixed allowed).
 # Installer logic uses paru only.
-INSTALL_PACKAGES = "ttf-google-sans ttf-jetbrains-mono-nerd bibata-cursor-theme-bin usage base-devel podman podman-compose aria2 ffmpeg syncthing  mise starship yt-dlp gnome-boxes gnome-software brave-bin cronie libreoffice-fresh gufw cachyos-gaming-meta cachyos-gaming-applications nautilus-open-in-ptyxis xterm envycontrol visual-studio-code-bin"
+INSTALL_PACKAGES = "ttf-google-sans ttf-jetbrains-mono-nerd bibata-cursor-theme-bin usage base-devel podman podman-compose aria2 ffmpeg syncthing  mise starship yt-dlp gnome-boxes gnome-software brave-bin cronie libreoffice-fresh gufw cachyos-gaming-meta cachyos-gaming-applications nautilus-open-in-ptyxis xterm envycontrol visual-studio-code-bin glab github-cli"
 # Put optional removals in PACMAN_REMOVE_PACKAGES.
 PACMAN_REMOVE_PACKAGES = "showtime shelly nvtop nano nano-syntax-highlighting firefox alacritty meld evince sushi papers gnome-system-monitor"
 
@@ -87,7 +87,7 @@ run_step "restore:checks" "restore:checks"
 run_step "restore:mirrors" "restore:mirrors"
 run_step "restore:system:packages" "restore:system:packages"
 run_step "restore:system:firewall" "restore:system:firewall"
-run_step "restore:apps:bundle" "restore:apps:bundle"
+run_step "restore:apps:flatpak" "restore:apps:flatpak"
 run_step "restore:desktop:state" "restore:desktop:state"
 run_step "restore:cron" "restore:cron"
 run_step "restore:dotfiles" "restore:dotfiles"
@@ -229,35 +229,35 @@ sudo ufw reload
 log "INFO" "ufw rules applied"
 """
 
-[tasks."restore:apps:bundle"]
-description = "Install non-native app layer via Homebrew Bundle"
-env = { BREW_FALLBACK_BIN = "/home/linuxbrew/.linuxbrew/bin/brew" }
+[tasks."restore:apps:flatpak"]
+description = "Restore Flatpak applications"
 run = """
-set -u
+set -Eeuo pipefail
 
 LOG_DIR="$HOME/$RESTORE_LOG_SUBDIR"
-LOG_FILE="$LOG_DIR/restore-apps-bundle.log"
+LOG_FILE="$LOG_DIR/restore-apps-flatpak.log"
 mkdir -p "$LOG_DIR"
 
 log() {
-  printf '[%s] [restore:apps:bundle] [%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" "$2" | tee -a "$LOG_FILE"
+  printf '[%s] [restore:apps:flatpak] [%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" "$2" | tee -a "$LOG_FILE"
 }
 
-if ! command -v brew >/dev/null 2>&1; then
-  log "INFO" "homebrew not found; attempting installation"
-  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || log "WARN" "homebrew install failed"
+if ! command -v flatpak >/dev/null 2>&1; then
+  log "WARN" "flatpak not installed; skipping flatpak restore"
+  exit 0
 fi
 
-BREW_BIN="$(command -v brew || true)"
-if [ -z "$BREW_BIN" ] && [ -x "$BREW_FALLBACK_BIN" ]; then
-  BREW_BIN="$BREW_FALLBACK_BIN"
-fi
-
-if [ -n "$BREW_BIN" ] && [ -f "$BACKUP_DIR/brew/Brewfile" ]; then
-  log "INFO" "running brew bundle for non-native packages"
-  "$BREW_BIN" bundle --file="$BACKUP_DIR/brew/Brewfile" || log "WARN" "brew bundle completed with errors"
+if [ -f "$BACKUP_DIR/flatpak/list.txt" ]; then
+  log "INFO" "restoring flatpak applications"
+  while IFS= read -r app; do
+    if [ -n "$app" ]; then
+      log "INFO" "installing $app"
+      flatpak install -y --noninteractive flathub "$app" 2>&1 | grep -v "^Checking" | grep -v "^Accessing" || log "WARN" "failed to install $app"
+    fi
+  done < "$BACKUP_DIR/flatpak/list.txt"
+  log "INFO" "flatpak restore complete"
 else
-  log "WARN" "brew not available or Brewfile missing; skipping brew bundle"
+  log "WARN" "flatpak list not found; skipping restore"
 fi
 """
 
@@ -291,7 +291,7 @@ description = "Backup system files and settings"
 run = [
   "mise run backup:clean",
   "mise run backup:desktop:state",
-  "mise run backup:homebrew",
+  "mise run backup:flatpak",
   "mise run backup:wallpapers",
   "mise run backup:cron",
   "mise run backup:chezmoi",
@@ -312,12 +312,22 @@ run = [
   "gnome-extensions list --enabled --user | while read ext; do if [ -d \"$HOME/.local/share/gnome-shell/extensions/$ext\" ]; then cp -r \"$HOME/.local/share/gnome-shell/extensions/$ext\" $BACKUP_DIR/gnome/extensions/; fi done",
 ]
 
-[tasks."backup:homebrew"]
-description = "Backup Homebrew Bundle manifest (non-native packages)"
-run = [
-  "mkdir -p $BACKUP_DIR/brew",
-  "/home/linuxbrew/.linuxbrew/bin/brew bundle dump --no-vscode --file=$BACKUP_DIR/brew/Brewfile --force",
-]
+[tasks."backup:flatpak"]
+description = "Backup installed Flatpak applications"
+run = """
+set -Eeuo pipefail
+
+BACKUP_FLATPAK_DIR="$BACKUP_DIR/flatpak"
+mkdir -p "$BACKUP_FLATPAK_DIR"
+
+if ! command -v flatpak >/dev/null 2>&1; then
+  echo "# flatpak not installed" > "$BACKUP_FLATPAK_DIR/list.txt"
+  exit 0
+fi
+
+echo "# Flatpak apps backup ($(date '+%Y-%m-%d %H:%M:%S'))" > "$BACKUP_FLATPAK_DIR/list.txt"
+flatpak list --app --columns=application | tail -n +1 >> "$BACKUP_FLATPAK_DIR/list.txt" || true
+"""
 
 [tasks."backup:wallpapers"]
 description = "Backup wallpapers directory"

@@ -1,3 +1,7 @@
+[tools]
+"github:junevm/msifancontrol" = "latest"
+"github:junevm/cdns" = "latest"
+
 [tasks."youtube-download"]
 alias = "ytdl"
 description = "Download YouTube video in highest quality"
