@@ -1,4 +1,4 @@
-# Flatpak apps backup (2026-05-27 11:29:19)
+# Flatpak apps backup (2026-05-28 15:42:24)
 com.bilingify.readest
 com.bitwarden.desktop
 com.github.tchx84.Flatseal
@@ -13,9 +13,9 @@ io.github.diegopvlk.Cine
 io.github.flattool.Warehouse
 io.github.peazip.PeaZip
 io.github.totoshko88.RustConn
-io.missioncenter.MissionCenter
 md.obsidian.Obsidian
 net.ankiweb.Anki
+net.nokyan.Resources
 org.cryptomator.Cryptomator
 org.gimp.GIMP
 org.gnome.Papers
