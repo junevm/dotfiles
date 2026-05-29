@@ -1,6 +1,7 @@
 [tools]
 "github:junevm/msifancontrol" = "latest"
 "github:junevm/cdns" = "latest"
+"bun" = "latest"
 
 [tasks."youtube-download"]
 alias = "ytdl"
