@@ -13,10 +13,11 @@ fish_add_path ~/.local/bin
 fish_add_path ~/go/bin
 
 # Environment variables
+set -Ux DOCKER_HOST "unix://$XDG_RUNTIME_DIR/podman/podman.sock"
 set -Ux CHROME_EXECUTABLE "/usr/bin/brave-browser"
-set -gx SSH_AUTH_SOCK "$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock" # if bitwarden installed via flatpak
-# set -gx SSH_AUTH_SOCK "$HOME/.bitwarden-ssh-agent.sock" # if bitwarden installed via native package manager
+set -Ux SSH_AUTH_SOCK "$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock" # if bitwarden installed via flatpak
 
+# set -gx SSH_AUTH_SOCK "$HOME/.bitwarden-ssh-agent.sock" # if bitwarden installed via native package manager
 # Allow local docker containers to connect to X server
 if command -q xhost
 	xhost +local:docker &>/dev/null
