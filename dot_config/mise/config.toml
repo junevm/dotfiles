@@ -40,7 +40,6 @@ run = [
   "if command -v paru >/dev/null 2>&1; then paru -Syu --noconfirm; else sudo pacman -Syu --noconfirm; fi",
   "if command -v paccache >/dev/null 2>&1; then sudo paccache -r -k 2 || true; fi",
   "flatpak update -y && flatpak uninstall --unused -y",
-  "BREW_BIN=$(command -v brew || true); if [ -z \"$BREW_BIN\" ]; then [ -x /home/linuxbrew/.linuxbrew/bin/brew ] && BREW_BIN=/home/linuxbrew/.linuxbrew/bin/brew; fi; if [ -n \"$BREW_BIN\" ]; then \"$BREW_BIN\" update && \"$BREW_BIN\" upgrade && \"$BREW_BIN\" cleanup -s; fi",
 ]
 
 [tasks.backup]
@@ -154,3 +153,8 @@ run = '''
 git rm -rf --cached .
 git add .
 '''
+
+[tasks."open:chezmoi"]
+alias = "o:chezmoi"
+description = "Open chezmoi config directory in vscode"
+run = "code ~/local/share/chezmoi"

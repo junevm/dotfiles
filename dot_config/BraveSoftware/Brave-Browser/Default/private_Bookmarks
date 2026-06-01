@@ -1,5 +1,5 @@
 {
-   "checksum": "29e2f617452851994d0a6c95db906caf",
+   "checksum": "8f33d2f258f4dcc0173c459623ef7a0a",
    "roots": {
       "bookmark_bar": {
          "children": [ {
@@ -38,7 +38,7 @@
                "url": "https://fmhy.net/"
             }, {
                "date_added": "13421583628344683",
-               "date_last_used": "13422626206740718",
+               "date_last_used": "13424692525432072",
                "guid": "9ee56467-a043-4d46-b22c-ee69ee7b5a88",
                "id": "35",
                "meta_info": {
@@ -185,7 +185,7 @@
             "type": "folder"
          }, {
             "date_added": "13412852127215635",
-            "date_last_used": "13424524967827512",
+            "date_last_used": "13424710739641625",
             "guid": "82b89bbe-bdf9-4e5a-8518-919a940a2a52",
             "id": "5",
             "meta_info": {
@@ -257,19 +257,8 @@
             "name": "academics",
             "type": "folder"
          }, {
-            "date_added": "13424246763347279",
-            "date_last_used": "0",
-            "guid": "0d0890d7-7ab2-41a0-bfd7-b244d6bc73b5",
-            "id": "52",
-            "meta_info": {
-               "power_bookmark_meta": ""
-            },
-            "name": "Merge Intervals - LeetCode",
-            "type": "url",
-            "url": "https://leetcode.com/problems/merge-intervals/description/"
-         }, {
             "date_added": "13424246772569137",
-            "date_last_used": "0",
+            "date_last_used": "13424708883271601",
             "guid": "56aa7d3e-917a-473a-b99e-d28791b255db",
             "id": "53",
             "meta_info": {
