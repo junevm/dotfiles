@@ -1,5 +1,5 @@
 {
-   "checksum": "8f33d2f258f4dcc0173c459623ef7a0a",
+   "checksum": "5d417cd1dfdd618d356ef0189b927c94",
    "roots": {
       "bookmark_bar": {
          "children": [ {
@@ -49,7 +49,7 @@
                "url": "https://pixeldrain-bypass.gamedrive.org/"
             }, {
                "date_added": "13421909103654609",
-               "date_last_used": "13422303210363037",
+               "date_last_used": "13422621523578753",
                "guid": "a24a68c7-2a9e-4286-b117-d42b20038b34",
                "id": "39",
                "meta_info": {
@@ -115,158 +115,52 @@
                "date_added": "13419015137657095",
                "date_last_used": "13419790382907069",
                "guid": "502d3983-f320-46a0-a56c-20d6a0ea61ac",
-               "id": "14",
+               "id": "63",
                "meta_info": {
                   "power_bookmark_meta": ""
                },
                "name": "Shruti Sonali — Non Linear Creative",
                "type": "url",
                "url": "https://www.portfoliobyshruti.com/"
-            }, {
-               "date_added": "13424320608882993",
-               "date_last_used": "0",
-               "guid": "cb92c8a9-d573-43bd-b0a7-b41c37b8fc9b",
-               "id": "56",
-               "meta_info": {
-                  "power_bookmark_meta": ""
-               },
-               "name": "40+ AI Image Prompt Styles to Transform Your Photos into Art",
-               "type": "url",
-               "url": "https://getdigitalresults.com/gen-ai/ai-image-prompt-styles/"
             } ],
             "date_added": "13419015157441513",
             "date_last_used": "0",
-            "date_modified": "13424320618309605",
+            "date_modified": "13419015157441513",
             "guid": "0acb903c-b980-4c70-8d7d-4b681ae23f9e",
-            "id": "15",
+            "id": "62",
             "name": "inspiration",
             "type": "folder"
          }, {
             "children": [ {
-               "date_added": "13419488749790612",
-               "date_last_used": "13420401427669255",
-               "guid": "6462d190-29bc-468c-8a70-7674ba703ab6",
-               "id": "24",
+               "date_added": "13424967063360077",
+               "date_last_used": "13424967271668317",
+               "guid": "51960613-9d9a-466d-a012-79bda3ed96fe",
+               "id": "65",
                "meta_info": {
                   "power_bookmark_meta": ""
                },
-               "name": "dashboard",
+               "name": "board · avtoolz",
                "type": "url",
-               "url": "https://gitlab.com/avm-org/mill/avtoolz"
+               "url": "https://github.com/users/junevm/projects/13"
             }, {
-               "date_added": "13419488783861919",
-               "date_last_used": "13420401424899465",
-               "guid": "7fca29f2-2bc4-4077-a516-a7823386c565",
-               "id": "26",
+               "date_added": "13424967124060209",
+               "date_last_used": "13424967270284470",
+               "guid": "e02b7272-e929-4868-858e-ced4753c5e04",
+               "id": "66",
                "meta_info": {
                   "power_bookmark_meta": ""
                },
-               "name": "cycles",
+               "name": "cycles · junevm/avtoolz",
                "type": "url",
-               "url": "https://gitlab.com/avm-org/mill/avtoolz/-/milestones"
-            }, {
-               "date_added": "13419488789311812",
-               "date_last_used": "13421129111444827",
-               "guid": "6c4ee06e-e057-4507-8af0-ecf4193d4fcd",
-               "id": "27",
-               "meta_info": {
-                  "power_bookmark_meta": ""
-               },
-               "name": "board",
-               "type": "url",
-               "url": "https://gitlab.com/avm-org/mill/avtoolz/-/boards/9764917"
+               "url": "https://github.com/junevm/avtoolz/milestones"
             } ],
             "date_added": "13419488769223085",
             "date_last_used": "0",
-            "date_modified": "13419488789311812",
+            "date_modified": "13424967124060209",
             "guid": "751a4f3f-17e4-400b-81c7-80491b60dc54",
             "id": "25",
             "name": "avtoolz",
             "type": "folder"
-         }, {
-            "date_added": "13412852127215635",
-            "date_last_used": "13424710739641625",
-            "guid": "82b89bbe-bdf9-4e5a-8518-919a940a2a52",
-            "id": "5",
-            "meta_info": {
-               "power_bookmark_meta": ""
-            },
-            "name": "syncthing",
-            "type": "url",
-            "url": "http://127.0.0.1:8384/"
-         }, {
-            "children": [ {
-               "date_added": "13420210042155602",
-               "date_last_used": "0",
-               "guid": "1e3f4b00-ee16-4a8a-9b78-e47ab63c1239",
-               "id": "29",
-               "meta_info": {
-                  "power_bookmark_meta": ""
-               },
-               "name": "GitZip",
-               "type": "url",
-               "url": "https://kinolien.github.io/gitzip/#"
-            }, {
-               "date_added": "13420991116224861",
-               "date_last_used": "0",
-               "guid": "a712e2b0-cc2c-470d-a6d2-d7191e2490d6",
-               "id": "32",
-               "meta_info": {
-                  "power_bookmark_meta": ""
-               },
-               "name": "⚡️Syntax Highlighter - Quick highlight Code for Editor (Customized by Shigeඞ) - AnkiWeb",
-               "type": "url",
-               "url": "https://ankiweb.net/shared/info/272582198"
-            }, {
-               "date_added": "13421596334735083",
-               "date_last_used": "13421671222739514",
-               "guid": "eb665aff-21e6-45bc-9419-c635723433d3",
-               "id": "37",
-               "meta_info": {
-                  "power_bookmark_meta": ""
-               },
-               "name": "Wayback Machine",
-               "type": "url",
-               "url": "https://web.archive.org/save"
-            } ],
-            "date_added": "13420210054349864",
-            "date_last_used": "0",
-            "date_modified": "13421909103654609",
-            "guid": "6d0d183d-a4fb-44d4-9a40-f829be323eee",
-            "id": "30",
-            "name": "tools",
-            "type": "folder"
-         }, {
-            "children": [ {
-               "date_added": "13422511522428453",
-               "date_last_used": "13424339307384326",
-               "guid": "e3ee6b8e-77a7-418b-9475-197351cbc59c",
-               "id": "46",
-               "meta_info": {
-                  "power_bookmark_meta": ""
-               },
-               "name": "Leetbot Data Explorer",
-               "type": "url",
-               "url": "https://leetbot.org/"
-            } ],
-            "date_added": "13422511568607120",
-            "date_last_used": "0",
-            "date_modified": "13422750678501733",
-            "guid": "36339ebb-7c33-43ce-896e-c327d12ea72d",
-            "id": "48",
-            "name": "academics",
-            "type": "folder"
-         }, {
-            "date_added": "13424246772569137",
-            "date_last_used": "13424708883271601",
-            "guid": "56aa7d3e-917a-473a-b99e-d28791b255db",
-            "id": "53",
-            "meta_info": {
-               "power_bookmark_meta": ""
-            },
-            "name": "Insert Interval - LeetCode",
-            "type": "url",
-            "url": "https://leetcode.com/problems/insert-interval/description/"
          }, {
             "date_added": "13424246781850240",
             "date_last_used": "0",
@@ -278,10 +172,21 @@
             "name": "Non-overlapping Intervals - LeetCode",
             "type": "url",
             "url": "https://leetcode.com/problems/non-overlapping-intervals/description/"
+         }, {
+            "date_added": "13412852127215635",
+            "date_last_used": "13422000040509879",
+            "guid": "82b89bbe-bdf9-4e5a-8518-919a940a2a52",
+            "id": "5",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "syncthing",
+            "type": "url",
+            "url": "http://127.0.0.1:8384/"
          } ],
          "date_added": "13418883539294680",
          "date_last_used": "0",
-         "date_modified": "13424320608882993",
+         "date_modified": "13424967063360077",
          "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
          "id": "1",
          "name": "Bookmarks bar",
@@ -308,5 +213,6 @@
          "type": "folder"
       }
    },
+   "sync_metadata": "CooBChAIiIECEgq+3a2O0mcAAAAAEgAaWDN6eGVMMDZ4WnFlZmNEc1gzYlNKNVk2RThBbnZiSzRZdEhPUVVYYmZOY1k0VlNuVXdlYmtwMGRPSGx4d0Z0WW5vWlYzT1ZLWnFNOW91QjBmb0FKK2Z3PT0qGFNHNlRiK25kemtsdzV3QVlmd0g3V2c9PUgDEqgBCAUSowEKHHFZVHJsblhTNHlvdlExVUV1M2d3a3dSdFA0VT0SJDBmODg2OTJmLTg4ZWItNDBlMy05ZTgxLTZjM2EzOGZlZDY3OBgAIAIoAjDfvsjC6DM49bHIwugzQN++yMLoM0ocTmdtZFlyeDB1Q0t0aDBsbW9oUzBibkx0c1I0PVofIh3rMk5QV0QyamYwWEtHVGhoaStkOTFMNVRqNDVRPWVP6B9TEqcBCAgSogEKHC93TUtvWkZ4cEQyQ2VwM0xGTVJXdERueWMxND0SJDllMTVlZDI1LWYwMTAtNDExYy05MDAzLWVkZGU3YmMwNTE2ZhgAIAIoAjD/vsjC6DM49bHIwugzQP++yMLoM0ocaS80VUJlNDViZmlreU02MkFPb21RZXZaL1I4PVoeIhx1ZzZtZGdOYktVMFRrY1JtOWYyZm0vaHVoWG89ZQAAAAASqAEIPhKjAQocK0tISGVEZXRqdTFiUko5SDRtTGlESzg3WUN3PRIkMTE1N2QzMGQtOTE3NC00ZThjLTlmNjktNDNlODkwMGY3YTIxGAAgACgAMKLByMLoMzi5j8jC6DNAuY/IwugzShxCU1ZlNjl4OC9GUW1wQTRvZ3NHU1JQLzJPVkU9Wh8iHa1ONjA4ZnJsZ1FjdklPUlh0ZFNxV1VLWEpONDA9ZQAAAAASqAEIMhKjAQocTFB0TjZPVVpaRTBpVG1uZm1UbzlMazBOc1ZzPRIkOWFhYjQ2MTAtMDFmOS00YzI0LTkyNTgtNzczMjUxMjEwZjNjGAAgAigCMOrCyMLoMzj1scjC6DNA9bHIwugzShxJekpPM0VaSi9LQk42RkJoaVRwVFhIRUlyMVE9Wh8iHf9pMkJ5b0JRQ3ZXeHBRTHp0MGxDbkwzdFdYSnc9ZaEhVKcSqAEIKBKjAQocWXRLbkRMV1E2NTVsS2NuaU9HMHhPWHFXUDBFPRIkOTU5ZmUxYWQtNjdkNC00ZGJlLWE4YWYtMDcxODg2YWU5NzkyGAAgAigCMNW/yMLoMzj1scjC6DNA1b/IwugzShxIZERHWnp5ZUN2eFdGVnVxdWcyUktHS1AxSkk9Wh8iHftCRy9wbWpiaHNzcVhRU3FGMHUwZ25oRmYrS1U9ZUVJ74ASpwEIPxKiAQocejlpY29IYzFaSk45YmRGUWlSY0V4dkVDampjPRIkYThiOTJkYzEtZTkwZi00YzI4LTk5YzktOTI5NzgzOTU5ODVkGAAgACgAMLTByMLoMzi5j8jC6DNAuY/IwugzShxVdXRRTFZZSUFXck1NODNMMnA4V2hFUHNCSHM9Wh4iHHNqRm04czlyckp5QU5FTE54Nm5NdHVZQm1MZz1lAAAAABKoAQgGEqMBChw3UGNCS3BhYVcreG9jNmlWRnprVlVIRm4rQzg9EiRhN2RhYzk4Ni0xYWRhLTRlMDUtYjlhYy0wMGFkZmM1ZjkyMGQYACACKAIwn7/IwugzOPWxyMLoM0Cfv8jC6DNKHG41SGphUDdwSFFBM3gyV3lWVkhONmR3Vm54Yz1aHyId3XJmWnIyNFZVVmdkNzdXdDdyLzB2eGFuMVNvRT1lBIcMcRKDAQgCEn8KHFljU1RvbnZFU1B3cUNzNEwyY3JWaHY2OEw5OD0SJDIxMjI0NWE3LTEzM2ItNGY4My1iZWIwLTg1NTlmMGE1MDFlMxgAIAAoADABON/cx8LoM0Df3MfC6DNKHG9QVmtod0JSYlY2NUtDV1IyK0lPTkhXb091OD1aAGUAAAAAEoMBCAMSfwocbmpnRHU4OGVDcnZYcDg2cEQ3ZkhHY3FGcDg4PRIkODljZTJjMWMtNTgyNC00MzVkLTlhMjAtN2Y0YTdiYjIyM2NmGAAgACgAMAE439zHwugzQN/cx8LoM0oceXpOQjAxY241NEE3Y1JVMHVUKy9QZ21UdFVvPVoAZQAAAAASqAEINhKjAQocd3dxYWpZS3dLSGovNG12d0w4NjJGL0JKdTJjPRIkYzZjYTJhYmItYTc2NC00ZmU4LTk4Y2QtZWVlM2VlMGUzMmViGAAgAigCMMzDyMLoMzj1scjC6DNA9bHIwugzShx3aUhNb1Z2ZGx4K3RhNWRJVzFReE5XRUdZN1k9Wh8iHesrM2U2S3BBRElmdGMvY2pDblVWTDJFN05kREE9ZTQ4eoMSgwEIARJ/Chx5eEovNmZ2a2VjcjdrcDVFUXpCNHRXTHBkYkU9EiQwMDJjNjcxZC02Y2JkLTQxNTgtOTI1NC04OWFlYTcwMGY5NDEYACAAKAAwATjf3MfC6DNA39zHwugzShxhUkNXTGdoRjliNUlucUtJRHZ1Si9qdlFrRmM9WgBlAAAAABKoAQgsEqMBChxpMjNNdjZCd3Y0Rkp5TGFGRE1FaktiV0Uza1k9EiQwZTMyMzE1ZC02NzA5LTQ5NGYtYjhiZS0xODI4YTFhMTM1MzcYACACKAIw97/IwugzOPWxyMLoM0D3v8jC6DNKHEZBRW9KZ050bGNHNTFzcy9wWFBQTGJrK0ZUcz1aHyId/jZNVVZkZHp3TENscFRmQk55Q1FDWDJMRGRERT1lmr/GLRKoAQhBEqMBChxNbC9mK3VuVVJDNi9vUk5tWjVRVmJTL0Frbk09EiRlMDU5ZjcyMC02MGVjLTRlYjgtOTAzMC1lMWU4Mjc2MTBiN2UYACAEKAQw46257egzOMDeuO3oM0C0lbnt6DNKHHE2VXRzZXhtcWdtVU00a2ozSXRwRm9KL1VERT1aHyId6DZMWEdoU1VhUHUxUTRrMXJZSmhGOTRLVlpBRT1lhWftDxKnAQgWEqIBChxURDBqemh5Rnd6T016YzVLSkMzTjdIVmNMUnc9EiQ3YmQwMzYxZS1mMDUzLTRjZDQtYTdkYi02NWM3ZjZkZWM5YzMYACACKAIw777IwugzOPWxyMLoM0DvvsjC6DNKHDdOdE1rdlBxVzVUTk1hcnltUEhVT2M3MzREVT1aHiIcWlZPWGtzSUVwSWdFaTQ3bXNMblVHMm5RRSs0PWUAAAAAEqgBCCcSowEKHFV0RCt0UG0xZndWWkZBaTBJNTMzbk1xbTk2VT0SJGUzYWY3NjliLWZlNzgtNDI0Zi05ZDAzLWQ3OTk1NjEyZGFiYhgAIAIoAjDDv8jC6DM49bHIwugzQMO/yMLoM0ocU3FidENEUDRhdk9UOEw5eisxNFRIM0kzUG1jPVofIh33L0NnaWhVc2N3bTIzOGt1eVcyaXFmWEYzU21ZPWV6CnL+EqgBCCoSowEKHGd0M3FEcXhTVDRDWm5kSGZYMllsSFc3dDRSOD0SJDIxNzIxY2FjLWVjZTYtNGVjZC1iY2Q2LTEwZjFkMGE3ZmM5YRgAIAIoAjDnv8jC6DM49bHIwugzQOe/yMLoM0ocV0lHRmdJRVB3NU8xOXFmcWhWSy81TzJXcVFnPVofIh39UnB3aXZZTkQxWnUvYnhlYnFzTXNJWlZ5ekkwPWWQ79MLEqgBCAkSowEKHERHZlJoWTNWSGs0dEdoYkFrYnhIRzFJVDVJMD0SJDNjNGIwYTBkLTU3M2EtNDZjYS05MjhiLTJhZTkyMjQyYjU3ORgAIAUoBTDf7paH6TM49bHIwugzQO7ZlofpM0occG9rYzJrUjNRN29iaWNyb0d4L2M4ZzE3WjNjPVofIh26NTVUbVI3QTZReTd6My8vSEFCWnNQNWlyVXBZPWXbfdXJEqgBCBkSowEKHGVManNBaEtlbTRiMXVGa3NML050dHlGVDhNbz0SJGFhYzE2MmUwLTdiMDktNGEzYS05MGZlLWQzZDcyM2JlOWNhOBgAIAIoAjDOwMjC6DM49bHIwugzQM7AyMLoM0occjAzYzZUUVFyOFhxS3lwOUoxTDVPbkdVcWxNPVofIh3WMzUyOWQyd1hXc01OSSs5ZStyeTlmZ2pvL0MwPWUAAAAAEqgBCCMSowEKHGdmSGIvTWVsMVQya0cva2pneHVFNHpoUHkxUT0SJDMwNWEwNjI1LWQzYmItNDgyYi1hMDJjLWEwZDdmZjRkZDM3NhgAIAIoAjCwv8jC6DM49bHIwugzQLC/yMLoM0ocT3M2T0RNcTNZMHliMHR6Ym9UOGJmV2tHWnlJPVofIh3uaHVXbzlqeUg5UTJxaDhDYTNxSW4xZm80cm9rPWVqeAjIEqgBCEISowEKHDRuWkQrUTVEOTBIemJQYWJzSzE0V2JLdnR3az0SJGNlOWFkNzJhLTE0N2EtNDdlNy1hMWYzLTE0NDUwYWE1ZDRhYhgAIAMoAzC7gr3t6DM43Li87egzQMPtvO3oM0ocT1VPRzNuTTBpRHNxeHhycE96OXRhZ1hTazI4PVofIh30NVN5cEFoSnNwL1F0aWZoNHZWclQ4YlVLSE9RPWWFZ+0PMAE4AA==",
    "version": 1
 }
