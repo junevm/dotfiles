@@ -1,4 +1,4 @@
-# Flatpak apps backup (2026-06-06 10:24:48)
+# Flatpak apps backup (2026-06-08 19:22:23)
 be.alexandervanhee.gradia
 com.bilingify.readest
 com.bitwarden.desktop
@@ -12,6 +12,7 @@ com.rafaelmardojai.SharePreview
 de.haeckerfelix.AudioSharing
 de.haeckerfelix.Shortwave
 io.dbeaver.DBeaverCommunity
+io.github.diegopvlk.Cine
 io.github.flattool.Warehouse
 io.github.peazip.PeaZip
 io.github.totoshko88.RustConn
