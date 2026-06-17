@@ -1,4 +1,4 @@
-# Flatpak apps backup (2026-06-09 18:37:42)
+# Flatpak apps backup (2026-06-17 16:54:53)
 be.alexandervanhee.gradia
 com.bilingify.readest
 com.bitwarden.desktop
@@ -21,6 +21,7 @@ md.obsidian.Obsidian
 me.iepure.devtoolbox
 net.ankiweb.Anki
 net.nokyan.Resources
+org.audacityteam.Audacity
 org.cryptomator.Cryptomator
 org.freedownloadmanager.Manager
 org.gimp.GIMP
