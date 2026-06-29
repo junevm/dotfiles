@@ -1072,9 +1072,8 @@ const WebWidgetContext = class {
             Soup.MessageHeadersType.RESPONSE
         );
 
-        if (this._cspString) {
+        if (this._cspString)
             headers.append('Content-Security-Policy', this._cspString);
-        }
 
         try {
             const requestHeaders = request?.get_http_headers?.() ?? null;

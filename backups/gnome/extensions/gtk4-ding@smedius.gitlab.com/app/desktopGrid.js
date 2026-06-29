@@ -2689,9 +2689,9 @@ const WidgetGrid = class extends ControlGrid {
     _onWidgetMoveDragEnd(_gesture, offsetX, offsetY) {
         this.endWidgetMove(offsetX, offsetY);
         if (this._draggedWidget &&
-            this._isWidgetDraggableChromeActor(this._draggedWidget)) {
+            this._isWidgetDraggableChromeActor(this._draggedWidget))
             this._desktopManager.widgetManager.clearSelectedInstance();
-        }
+
         this.click = null;
         this._pendingChromeDrag = null;
     }
@@ -2835,7 +2835,7 @@ const WidgetGrid = class extends ControlGrid {
     _onClick(gesture, nPress, x, y) {
         this.restoreWidgetLayerFocus();
         const widget = this._findWidgetAt(x, y);
-        const instanceId = widget?.widgetInstanceId;
+        let instanceId = widget?.widgetInstanceId;
         this.click = null;
 
         if (!widget) {
@@ -2845,7 +2845,7 @@ const WidgetGrid = class extends ControlGrid {
         }
 
         if (this._isWidgetMoveButtonActor(widget)) {
-            const instanceId = this._selectedWidget;
+            instanceId = this._selectedWidget;
             if (!instanceId)
                 return;
 
@@ -2860,9 +2860,8 @@ const WidgetGrid = class extends ControlGrid {
             return;
         }
 
-        if (this._isWidgetDraggableChromeActor(widget)) {
+        if (this._isWidgetDraggableChromeActor(widget))
             return;
-        }
 
         if (!instanceId)
             return;

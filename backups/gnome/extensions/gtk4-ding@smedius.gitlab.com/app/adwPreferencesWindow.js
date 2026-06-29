@@ -378,7 +378,14 @@ const aboutApp = class AboutDialog {
         );
 
         aboutDialog.set_release_notes(
-            `<p>* Adw version 100.23 for Gnome 50</p>
+            `<p>* Adw version 100.24 for Gnome 50</p>
+<ul><li>Add support for downloading and installing the latest widgets from the Add Widget dialog, with a refreshed chooser and widget registry parsing.</li>
+<li>Run the main app and HTML widget backend processes in dedicated systemd cgroup scopes under user.app, with app-prefixed subprocess names, independent of GNOME Shell.</li>
+<li>Improve media player widgets by keeping the last active player selected when multiple players are playing.</li>
+<li>Persist pinned widget global coordinates so pinned widgets keep their positions across grid and margin changes.</li>
+<li>Add retry handling for temporary Open-Meteo 502/504 failures in weather widgets.</li>
+<li>Weblate translation update.</li></ul>
+            <p>* Adw version 100.23 for Gnome 50</p>
 <ul><li>Refreshes GNOME 50 support with a Mutter cursor fix, Nautilus Previewer 2 / Sushi D-Bus support, improved Today widget dragging and timezone handling, plus packaging and translation updates.</li></ul>
             <p>* Adw version 100.22 for Gnome 49, 50</p>
 <ul><li>Merge the latest window-tracking and draggable-widget fixes: clock, metrics, weather, media, and pinned windows now drag and track positions more reliably, while weather animations stay off by default and media widgets use a lighter DOM to reduce CPU use.</li></ul>

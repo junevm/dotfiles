@@ -18,9 +18,11 @@
 import {Adw, Gio, GLib, Gtk, Gdk} from '../dependencies/gi.js';
 import {_} from '../dependencies/gettext.js';
 import {WidgetRegistry} from '../dependencies/localFiles.js';
+import {FileUtils} from '../dependencies/localFiles.js';
 import {HtmlWidgetHost, HtmlWidgetHostWithBackend} from '../dependencies/localFiles.js';
 import {PinnedWindowManager} from '../dependencies/localFiles.js';
 import {WebWidgetContext} from '../dependencies/localFiles.js';
+import {WebUtils} from '../dependencies/localFiles.js';
 
 /**
  * WidgetManager
@@ -33,6 +35,8 @@ import {WebWidgetContext} from '../dependencies/localFiles.js';
  *   - We store per-instance:
  *       * monitorIndex
  *       * normX, normY  (0..1, normalized to grid.normalizedWidth/Height)
+ *       * pinnedGlobalX, pinnedGlobalY (absolute shell coords for floating
+ *         pinned windows; used to survive margin/order changes)
  *       * width, height (absolute pixels, widget-owned)
  *   - On layout changes, we rebuild a map of:
  *       monitorIndex -> { grid, widgetContainer }
@@ -63,7 +67,8 @@ function configJson(config) {
     }
 }
 
-const WIDGETS_STATE_SCHEMA_VERSION = 3;
+const WIDGETS_STATE_SCHEMA_VERSION = 4;
+const ENTIRE_STRING_LENGTH = -1;
 const appID = 'com.desktop.ding';
 const appPath = GLib.build_filenamev(['/', ...appID.split('.')]);
 
@@ -104,6 +109,7 @@ const WidgetManager = class {
         this._selectionChromeSuppressed = false;
         this._pendingPinnedWindowReloadId = 0;
         this._dbusScreenSaverActiveChangedId = 0;
+        this._downloadCancellable = new Gio.Cancellable();
 
         // When true, suppress emitting stateChanged events
         this._suppressStateEvents = false;
@@ -143,6 +149,7 @@ const WidgetManager = class {
     }
 
     stopWidgetDisplay() {
+        this._downloadCancellable?.cancel();
         this._cancelPendingPinnedWindowReload();
 
         for (const surface of this._surfaces.values())
@@ -384,9 +391,8 @@ const WidgetManager = class {
 
         const created = await this._ensureInstanceActor(instance);
 
-        if (!created) {
+        if (!created)
             return null;
-        }
 
         if (opts.initialPinned === true)
             instance.pinned = true;
@@ -461,6 +467,15 @@ const WidgetManager = class {
 
         inst.normX = normX;
         inst.normY = normY;
+        if (inst.pinned) {
+            const [globalX, globalY] =
+                surface.grid.coordinatesLocalToGlobal(
+                    Math.round(x),
+                    Math.round(y)
+                );
+            inst.pinnedGlobalX = globalX;
+            inst.pinnedGlobalY = globalY;
+        }
 
         this._positionInstanceActor(inst);
     }
@@ -470,16 +485,26 @@ const WidgetManager = class {
         if (!inst || !inst.pinned)
             return;
 
+        const roundedGlobalX = Math.round(globalX);
+        const roundedGlobalY = Math.round(globalY);
+
+        if (inst.pinnedGlobalX === roundedGlobalX &&
+            inst.pinnedGlobalY === roundedGlobalY)
+            return;
+
+        inst.pinnedGlobalX = roundedGlobalX;
+        inst.pinnedGlobalY = roundedGlobalY;
+
         let targetSurface = this._surfaces.get(inst.monitorIndex) ?? null;
 
         if (!targetSurface?.grid?.coordinatesBelongToThisGridWindow?.(
-            globalX,
-            globalY
+            roundedGlobalX,
+            roundedGlobalY
         )) {
             for (const surface of this._surfaces.values()) {
                 if (!surface?.grid?.coordinatesBelongToThisGridWindow?.(
-                    globalX,
-                    globalY
+                    roundedGlobalX,
+                    roundedGlobalY
                 ))
                     continue;
 
@@ -489,11 +514,16 @@ const WidgetManager = class {
             }
         }
 
-        if (!targetSurface?.grid)
+        if (!targetSurface?.grid) {
+            this._stateChanged();
             return;
+        }
 
         const [localX, localY] =
-            targetSurface.grid._coordinatesGlobalToLocal(globalX, globalY);
+            targetSurface.grid._coordinatesGlobalToLocal(
+                roundedGlobalX,
+                roundedGlobalY
+            );
         const roundedLocalX = Math.round(localX);
         const roundedLocalY = Math.round(localY);
         const currentFrame = this.getInstanceFrame(instanceId);
@@ -502,8 +532,10 @@ const WidgetManager = class {
         if (currentFrame &&
             inst.monitorIndex === targetMonitorIndex &&
             currentFrame.x === roundedLocalX &&
-            currentFrame.y === roundedLocalY)
+            currentFrame.y === roundedLocalY) {
+            this._stateChanged();
             return;
+        }
 
 
         inst.monitorIndex = targetMonitorIndex;
@@ -511,6 +543,8 @@ const WidgetManager = class {
 
         if (inst.pinned)
             this._pinnedWindowManager.refreshInstance(inst);
+
+        this._stateChanged();
     }
 
     /*
@@ -583,6 +617,24 @@ const WidgetManager = class {
             return null;
 
         const surface = this._surfaces.get(inst.monitorIndex);
+
+        if (inst.pinned &&
+            surface?.grid?.coordinatesBelongToThisGridWindow?.(
+                inst.pinnedGlobalX,
+                inst.pinnedGlobalY
+            ) &&
+            Number.isFinite(inst.pinnedGlobalX) &&
+            Number.isFinite(inst.pinnedGlobalY)
+        ) {
+            return {
+                x: inst.pinnedGlobalX,
+                y: inst.pinnedGlobalY,
+                width: frame.width,
+                height: frame.height,
+                clamped: frame.clamped,
+            };
+        }
+
         if (!surface) {
             return {
                 x: frame.x,
@@ -946,6 +998,14 @@ const WidgetManager = class {
                         instance.normY = instData.normY ?? 0;
                         instance.width = instData.width ?? 200;
                         instance.height = instData.height ?? 150;
+                        instance.pinnedGlobalX =
+                            Number.isFinite(instData.pinnedGlobalX)
+                                ? instData.pinnedGlobalX
+                                : null;
+                        instance.pinnedGlobalY =
+                            Number.isFinite(instData.pinnedGlobalY)
+                                ? instData.pinnedGlobalY
+                                : null;
                         instance.config = resolvedConfig;
                         instance.prefsUri = resolvedPrefsUri;
                         instance.hasPreferences = resolvedHasPreferences;
@@ -966,6 +1026,14 @@ const WidgetManager = class {
                             normY: instData.normY ?? 0,
                             width: instData.width ?? 200,
                             height: instData.height ?? 150,
+                            pinnedGlobalX:
+                                Number.isFinite(instData.pinnedGlobalX)
+                                    ? instData.pinnedGlobalX
+                                    : null,
+                            pinnedGlobalY:
+                                Number.isFinite(instData.pinnedGlobalY)
+                                    ? instData.pinnedGlobalY
+                                    : null,
                             actor: null,
                             config: resolvedConfig,
                             prefsUri: resolvedPrefsUri,
@@ -1095,8 +1163,16 @@ const WidgetManager = class {
         if (!nextPinned && inst.widgetEditMode)
             this._setWidgetEditMode(inst, false);
 
-        if (!nextPinned)
+        if (!nextPinned) {
             this._pinnedWindowManager.unpinInstance(inst);
+        } else if (!Number.isFinite(inst.pinnedGlobalX) ||
+            !Number.isFinite(inst.pinnedGlobalY)) {
+            const frame = this.getInstanceGlobalFrame(instanceId);
+            if (frame) {
+                inst.pinnedGlobalX = frame.x;
+                inst.pinnedGlobalY = frame.y;
+            }
+        }
 
         inst.pinned = nextPinned;
         if (inst.kind === 'html' && inst.actor && inst.host)
@@ -1312,10 +1388,11 @@ const WidgetManager = class {
      *
      * The saved schema is identical to loadState():
      * {
-     *   version: 1,
+     *   version: 4,
      *   instances: [
      *     { instanceId, widgetId, kind, monitorIndex,
-     *       normX, normY, width, height, config }
+     *       normX, normY, width, height,
+     *       pinnedGlobalX, pinnedGlobalY, config }
      *   ]
      * }
      * */
@@ -1339,6 +1416,12 @@ const WidgetManager = class {
                 normY: inst.normY,
                 width: inst.width,
                 height: inst.height,
+                pinnedGlobalX: Number.isFinite(inst.pinnedGlobalX)
+                    ? inst.pinnedGlobalX
+                    : null,
+                pinnedGlobalY: Number.isFinite(inst.pinnedGlobalY)
+                    ? inst.pinnedGlobalY
+                    : null,
                 config: inst.config ?? {},
                 prefsUri: inst.prefsUri ?? null,
                 hasPreferences: !!inst.hasPreferences,
@@ -1410,6 +1493,25 @@ const WidgetManager = class {
             migrated = true;
         }
 
+        if (schemaVersion < 4) {
+            for (const instData of state.instances) {
+                if (!instData || typeof instData !== 'object')
+                    continue;
+
+                instData.pinnedGlobalX =
+                    Number.isFinite(instData.pinnedGlobalX)
+                        ? instData.pinnedGlobalX
+                        : null;
+                instData.pinnedGlobalY =
+                    Number.isFinite(instData.pinnedGlobalY)
+                        ? instData.pinnedGlobalY
+                        : null;
+            }
+
+            state.version = 4;
+            migrated = true;
+        }
+
         if (migrated && this._preferences) {
         // Persist the migrated file state as-is (do NOT call exportState() here).
             this._preferences.widgetState = state;
@@ -1449,6 +1551,8 @@ const WidgetManager = class {
             normY,
             width,
             height,
+            pinnedGlobalX: null,
+            pinnedGlobalY: null,
             actor: null,
             config,
             kind,
@@ -1907,6 +2011,7 @@ const WidgetManager = class {
                 continue;
 
             try {
+                // eslint-disable-next-line no-await-in-loop
                 await inst.host.reload();
             } catch (e) {
                 console.error(
@@ -1964,6 +2069,7 @@ const WidgetManager = class {
                 instanceId: inst.instanceId,
                 widgetId: inst.widgetId,
                 frameRect: frame,
+                mainApp: this._desktopManager.mainApp,
                 widgetRegistry: this._widgetRegistry,
                 webContext: webCtx,
             });
@@ -2764,6 +2870,8 @@ const WidgetManager = class {
             return null;
         }
 
+        this._widgetRegistry.reload();
+
         let widgets;
         try {
             widgets = await this._widgetRegistry.listWidgets();
@@ -2782,14 +2890,36 @@ const WidgetManager = class {
         if (Number.isInteger(monitorIndex))
             parentWindow = this.getSurfaceWindow(monitorIndex) ?? parentWindow;
 
-        const {window, list, addButton, cancelButton} =
-            this._createWidgetPickerWindow(parentWindow, widgets);
+        const cancellable = this._getDownloadCancellable();
+
+        const {window, list, addButton, cancelButton, downloadButton} =
+            this._createWidgetPickerWindow(parentWindow, widgets, cancellable);
 
         const resultPromise = new Promise(resolve => {
             let creationInProgress = false;
+            let reopeningAfterDownload = false;
 
             cancelButton.connect('clicked', () => {
                 window.close();
+            });
+
+            downloadButton.connect('clicked', async () => {
+                try {
+                    const didInstall = await this.downloadLatestWidgets(
+                        parentWindow,
+                        cancellable
+                    );
+
+                    if (didInstall) {
+                        reopeningAfterDownload = true;
+                        resolve(null);
+                        window.close();
+                        this.openAddWidgetDialog(parentWindow, monitorIndex)
+                            .catch(logError);
+                    }
+                } catch (e) {
+                    logError(e);
+                }
             });
 
             addButton.connect('clicked', async () => {
@@ -2828,6 +2958,11 @@ const WidgetManager = class {
 
             // If user closes via window close button / Esc
             window.connect('close-request', () => {
+                cancellable.cancel();
+
+                if (reopeningAfterDownload)
+                    return false;
+
                 if (!creationInProgress)
                     resolve(null);
 
@@ -2870,13 +3005,15 @@ const WidgetManager = class {
         const addButton = builder.get_object('add_button');
         /** @type {Gtk.Button} */
         const cancelButton = builder.get_object('cancel_button');
+        /** @type {Gtk.Button} */
+        const downloadButton = builder.get_object('download_button');
 
         if (parentWindow)
             window.set_transient_for(parentWindow);
 
         // Populate rows from registry
-        for (const desc of widgets) {
-            const row = this._createWidgetRow(desc);
+        for (const [index, desc] of widgets.entries()) {
+            const row = this._createWidgetRow(desc, index);
             list.append(row);
         }
 
@@ -2885,22 +3022,42 @@ const WidgetManager = class {
         if (firstRow)
             list.select_row(firstRow);
 
-        return {window, list, addButton, cancelButton};
+        return {window, list, addButton, cancelButton, downloadButton};
     }
 
-    _createWidgetRow(desc) {
+    _createWidgetRow(desc, index = 0) {
         const row = new Gtk.ListBoxRow();
         row._widgetId = desc.id;
+        row.add_css_class('widget-picker-row');
+        if (index % 2 === 1)
+            row.add_css_class('widget-picker-row-alt');
 
         const box = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
             spacing: 2,
+            hexpand: true,
         });
 
         const titleLabel = new Gtk.Label({
-            label: desc.name || desc.id,
+            label: `<b>${GLib.markup_escape_text(
+                desc.name,
+                ENTIRE_STRING_LENGTH
+            )}</b>`,
+            use_markup: true,
             xalign: 0,
         });
+
+        const descriptionText = desc.description;
+        const descriptionLabel = new Gtk.Label({
+            label: descriptionText,
+            xalign: 0,
+            hexpand: true,
+            halign: Gtk.Align.FILL,
+            wrap: true,
+            wrap_mode: Gtk.WrapMode.WORD_CHAR,
+            max_width_chars: 58,
+        });
+        descriptionLabel.add_css_class('dim-label');
 
         const subtitleParts = [];
 
@@ -2913,11 +3070,9 @@ const WidgetManager = class {
                 subtitleParts.push(desc.kind);
         }
 
-        if (desc.category)
-            subtitleParts.push(desc.category);
-
-        if (desc.isUser)
-            subtitleParts.push(_('User'));
+        subtitleParts.push(
+            desc.isUser ? _('User Installed') : _('System Installed')
+        );
 
         const subtitle = subtitleParts.join(' · ');
 
@@ -2928,11 +3083,146 @@ const WidgetManager = class {
         subtitleLabel.add_css_class('dim-label');
 
         box.append(titleLabel);
+        box.append(descriptionLabel);
         if (subtitle)
             box.append(subtitleLabel);
 
         row.set_child(box);
         return row;
+    }
+
+    async downloadLatestWidgets(parentWindow = null, cancellable = null) {
+        const confirmed = await this._asyncAskYesNo(
+            _('Download Latest Widgets from Repository?'),
+            _(
+                'This will overwrite all widgets in your local widgets folder.'
+            ),
+            false,
+            parentWindow,
+            cancellable
+        ).catch(e => {
+            logError(e);
+            return false;
+        });
+
+        if (!confirmed)
+            return false;
+
+        const appDataDir = this._desktopIconsUtil.getAppUserDataDir();
+        const archiveUrl = this.Enums.WIDGETS_DOWNLOAD_URL;
+        const tempRootDir = appDataDir.get_child(
+            `widgets.download.${Date.now()}.${Math.floor(Math.random() * 1e9)}`
+        );
+        const extractDir = tempRootDir.get_child('extract');
+        const liveDir = appDataDir.get_child('widgets');
+        const backupDir = appDataDir.get_child('widgets.backup');
+
+        try {
+            await FileUtils.recursivelyMakeDir(tempRootDir, cancellable);
+            await FileUtils.recursivelyMakeDir(extractDir, cancellable);
+
+            const archiveData = await WebUtils.downloadBytes(
+                archiveUrl,
+                30,
+                cancellable
+            );
+            const archiveFile = tempRootDir.get_child('widgets.tar.gz');
+            await WebUtils.writeBytesToFile(
+                archiveFile,
+                archiveData.bytes,
+                cancellable
+            );
+            try {
+                await this._desktopManager.autoAr.extractArchiveToFolder(
+                    archiveFile.get_path(),
+                    extractDir,
+                    cancellable
+                );
+            } catch (e) {
+                if (e?.message !== 'AutoAr is not installed')
+                    throw e;
+
+                await WebUtils.extractTarGzArchive(
+                    archiveFile,
+                    extractDir,
+                    cancellable
+                );
+            }
+
+            const sourceWidgetsDir =
+                await FileUtils.findChildDirRecursive(
+                    extractDir,
+                    'widgets',
+                    cancellable
+                );
+            if (!sourceWidgetsDir)
+                throw new Error('Downloaded archive did not contain a widgets folder');
+
+            if (await FileUtils.queryExists(backupDir, cancellable)) {
+                await FileUtils.recursivelyDeleteDir(
+                    backupDir,
+                    true,
+                    cancellable
+                );
+            }
+
+            if (cancellable.is_cancelled())
+                return false;
+
+            if (await FileUtils.queryExists(liveDir))
+                await FileUtils.moveFile(liveDir, backupDir);
+
+            try {
+                await FileUtils.moveFile(sourceWidgetsDir, liveDir);
+            } catch (moveError) {
+                if (await FileUtils.queryExists(backupDir)) {
+                    try {
+                        await FileUtils.moveFile(backupDir, liveDir);
+                    } catch (restoreError) {
+                        console.error(
+                            'downloadLatestWidgets: failed to restore widgets backup:',
+                            restoreError
+                        );
+                    }
+                }
+                throw moveError;
+            } finally {
+                // `widgets.backup` is temporary rollback state and should never linger.
+                if (await FileUtils.queryExists(backupDir))
+                    await FileUtils.recursivelyDeleteDir(backupDir, true);
+            }
+
+            this._widgetRegistry.reload();
+            this._desktopManager.dbusManager?.doNotify(
+                _('Widgets updated'),
+                _('The latest widgets were downloaded and installed.')
+            );
+            return true;
+        } catch (e) {
+            if (e?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                return false;
+            console.error('downloadLatestWidgets: install failed:', e);
+            this._desktopManager.dbusManager?.doNotify(
+                _('Widgets download failed'),
+                e?.message ?? String(e)
+            );
+            return false;
+        } finally {
+            try {
+                if (await FileUtils.queryExists(tempRootDir))
+                    await FileUtils.recursivelyDeleteDir(tempRootDir, true);
+            } catch (e) {
+                // ignore cleanup failures
+            }
+        }
+    }
+
+    _getDownloadCancellable() {
+        if (!this._downloadCancellable?.is_cancelled?.())
+            return this._downloadCancellable;
+
+        this._downloadCancellable = new Gio.Cancellable();
+        return this._downloadCancellable;
     }
 
     _addActions() {
@@ -3007,7 +3297,16 @@ const WidgetManager = class {
      * Widget Consent UI
      * ===================================================================== */
 
-    _asyncAskYesNo(heading, body, bodyUseMarkup = false, parentWindow = null) {
+    _asyncAskYesNo(
+        heading,
+        body,
+        bodyUseMarkup = false,
+        parentWindow = null,
+        cancellable = null
+    ) {
+        if (cancellable?.is_cancelled())
+            return Promise.resolve(false);
+
         const anchorParent =
             parentWindow ?? this._desktopManager.getDialogParentWindow();
         const yesLabel = _('Allow');
@@ -3015,6 +3314,8 @@ const WidgetManager = class {
 
         return new Promise(resolve => {
             const dlg = new Adw.AlertDialog();
+            let cancelId = 0;
+
             dlg.set_presentation_mode(Adw.DialogPresentationMode.FLOATING);
             dlg.set_follows_content_size(false);
             dlg.set_content_width(500);
@@ -3051,7 +3352,16 @@ const WidgetManager = class {
             }));
             dlg.add_controller(shortcutController);
 
+            if (cancellable) {
+                cancelId = cancellable.connect(() => {
+                    dlg.close();
+                });
+            }
+
             dlg.connect('response', (_d, response) => {
+                if (cancelId && cancellable)
+                    cancellable.disconnect(cancelId);
+
                 resolve(response === 'yes');
             });
 
@@ -3113,10 +3423,13 @@ const WidgetManager = class {
         const heading = _('Allow web content for {widgetId}?')
             .replace('{widgetId}', widgetId);
         const cspProfile = this._describeCspProfileForHumans();
-        const cspProfileName = GLib.markup_escape_text(cspProfile.name, -1);
+        const cspProfileName = GLib.markup_escape_text(
+            cspProfile.name,
+            ENTIRE_STRING_LENGTH
+        );
         const cspProfileSummary = GLib.markup_escape_text(
             cspProfile.summary,
-            -1
+            ENTIRE_STRING_LENGTH
         );
         const body =
             // eslint-disable-next-line prefer-template
@@ -3131,7 +3444,8 @@ const WidgetManager = class {
             heading,
             body,
             true,
-            parentWindow
+            parentWindow,
+            this._getDownloadCancellable()
         );
 
         return answer;
@@ -3161,8 +3475,14 @@ const WidgetManager = class {
         _('The backend runs with your normal user permissions, just like any other application you start.\n') +
         _('It can access your files, system resources, and the network according to your user account permissions.\n\n') +
         (argvStr
-            ? `<b>${GLib.markup_escape_text(_('Command:'), -1)}</b>\n` +
-              `${GLib.markup_escape_text(argvStr, -1)}\n\n`
+            ? `<b>${GLib.markup_escape_text(
+                _('Command:'),
+                ENTIRE_STRING_LENGTH
+            )}</b>\n` +
+              `${GLib.markup_escape_text(
+                  argvStr,
+                  ENTIRE_STRING_LENGTH
+              )}\n\n`
             : '') +
         _('Only allow this for widgets you implicitly trust.');
         const parentWindow = this.getSurfaceWindow(inst.monitorIndex);
@@ -3171,7 +3491,8 @@ const WidgetManager = class {
             _('Allow widget backend?'),
             body,
             true,
-            parentWindow
+            parentWindow,
+            this._getDownloadCancellable()
         );
 
         return answer;

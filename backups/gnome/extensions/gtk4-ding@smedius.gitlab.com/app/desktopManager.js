@@ -119,10 +119,11 @@ const DesktopManager = class {
         if (!activeWindow)
             return null;
 
-        if (this.widgetManager)
+        if (this.widgetManager) {
             return this.widgetManager.resolveSurfaceWindowFromActiveWindow(
                 activeWindow
             );
+        }
 
         return activeWindow;
     }

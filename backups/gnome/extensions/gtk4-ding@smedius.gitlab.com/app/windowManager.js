@@ -449,6 +449,8 @@ const WindowManager = class {
                 safegaurd = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000,
                     () => {
                         safegaurd = 0;
+                        // No useless log noise if windows fail to map
+                        // eslint-disable-next-line prefer-promise-reject-errors
                         reject();
                         return GLib.SOURCE_REMOVE;
                     }

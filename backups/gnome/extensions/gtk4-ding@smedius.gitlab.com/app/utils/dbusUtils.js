@@ -947,13 +947,11 @@ class RemoteFileOperationsManager extends DbusOperationsManager {
                             if (handle)
                                 parentHandle = `wayland:${handle}`;
 
-
                             freePlatformData = () => {
                                 if (topLevel instanceof GdkWayland.WaylandToplevel)
                                     topLevel.unexport_handle();
                             };
                         }
-
                     } catch (e) {
                         console.error(e,
                             'Impossible to determine the parent window'
@@ -973,7 +971,7 @@ class RemoteFileOperationsManager extends DbusOperationsManager {
             };
     }
 
-    async ShowFileRemote(uri, activationToken ='', boolean, callback = null) {
+    async ShowFileRemote(uri, activationToken = '', boolean, callback = null) {
         if (!this.gnomeNautilusPreviewManager.proxy) {
             this._sendNoProxyError(callback);
 

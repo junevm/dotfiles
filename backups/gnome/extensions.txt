@@ -11,4 +11,4 @@ compiz-alike-magic-lamp-effect@hermes83.github.com
 user-theme@gnome-shell-extensions.gcampax.github.com
 drive-menu@gnome-shell-extensions.gcampax.github.com
 add-to-desktop@tommimon.github.com
-nightthemeswitcher@romainvigier.fr
+monitor-input-switch@nemofq.github.io

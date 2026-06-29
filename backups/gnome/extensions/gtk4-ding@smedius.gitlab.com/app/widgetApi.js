@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* DING: Desktop Icons New Generation for GNOME Shell
  *
  * Gtk4 Port Copyright (C) 2022 - 2025 Sundeep Mediratta (smedius@gmail.com)

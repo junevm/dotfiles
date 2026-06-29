@@ -351,8 +351,16 @@ const WidgetRegistry = class  {
 
                     const id = idRaw;
                     const kind = manifest.kind === 'gtk' ? 'gtk' : 'html';
-                    const displayName = manifest.name || id;
-                    const description = manifest.description || '';
+                    const widgetName =
+                        typeof manifest.name === 'string' &&
+                            manifest.name.trim()
+                            ? manifest.name.trim()
+                            : id;
+                    const description =
+                        typeof manifest.description === 'string' &&
+                            manifest.description.trim()
+                            ? manifest.description.trim()
+                            : id;
                     const author = manifest.author || '';
                     const version = manifest.version || '';
                     const icon = manifest.icon || '';
@@ -395,7 +403,7 @@ const WidgetRegistry = class  {
                         dir: widgetDir,
                         manifestFile,
                         isUser,
-                        displayName,
+                        name: widgetName,
                         description,
                         author,
                         version,

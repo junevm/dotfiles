@@ -27,6 +27,7 @@ const HtmlWidgetHost = class {
      *     instanceId: string,
      *     widgetId: string,
      *     frameRect: {x, y, width, height},
+     *     mainApp: Adw.Application | null,
      *     widgetRegistry: WidgetRegistry | null,
      *     webContext: WebKit.WebContext,
      *     mode: 'prefs' or 'widget'
@@ -37,6 +38,7 @@ const HtmlWidgetHost = class {
         this._instanceId = params.instanceId;
         this._widgetId = params.widgetId;
         this._frameRect = params.frameRect;
+        this._mainApp = params.mainApp ?? null;
         this._widgetRegistry = params.widgetRegistry;
         this._webContext = params.webContext;
         this._mode = params.mode === 'prefs' ? 'prefs' : 'widget';

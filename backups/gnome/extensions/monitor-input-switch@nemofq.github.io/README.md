@@ -1,0 +1,76 @@
+# Monitor Input Switch
+
+<img src="resources/images/screenshot.png" alt="Screenshot">
+
+A GNOME Shell extension that switches an external monitor's input source via `ddcutil`. Lives in the Quick Settings panel.
+
+**Features:**
+- Switch to HDMI (`0x11`), DisplayPort (`0x0f`), USB-C (`0x1b`) via DDC/CI VCP code `0x60`
+- Choose one target monitor if multiple detected
+- Customize which inputs to show
+- Expand each input in preferences to customize its DDC input ID for monitors with non-standard values
+
+## Requirements
+
+- GNOME Shell 48, 49, or 50
+- `ddcutil` installed (`which ddcutil` to check) and `ddcutil detect` should list your monitor
+
+## Install
+
+### From Gnome Extensions (Recommended)
+
+Coming soon.
+
+### From Latest GitHub Release
+
+1. Download the latest release from [Releases](https://github.com/nemofq/monitor-input-switch/releases).
+
+2. Install the extension:
+
+   ```sh
+   gnome-extensions install -f ~/Downloads/monitor-input-switch@nemofq.github.io.zip
+   ```
+
+3. Restart the session by logging out.
+
+4. Enable the extension in [Extension Manager](https://flathub.org/en/apps/com.mattjakeman.ExtensionManager) or by running:
+
+   ```sh
+   gnome-extensions enable monitor-input-switch@nemofq.github.io
+   ```
+
+## Troubleshooting
+
+### Screen hang during detection
+
+**Cause:** `ddcutil detect` performs kernel-level I2C operations that can freeze the desktop on some hardware.
+
+**Mitigations:**
+
+- **Sysfs pre-check before `ddcutil detect`:** We read `/sys/class/drm/*/status` to check if any external display is connected. If none, we skip `ddcutil detect` entirely.
+- **`--disable-dynamic-sleep` on `ddcutil detect`:** Prevents `ddcutil` from progressively extending sleep intervals on unresponsive buses.
+
+### GNOME startup / hotplug race conditions
+
+**Cause:** During GNOME Shell startup and after display hotplug events, the compositor is still negotiating with monitors. Sending `ddcutil` commands during this window can race with the DRM subsystem and leave the desktop in a broken state.
+
+**Mitigations:**
+
+- **30-second buffer before scanning:** Both the first scan (after `startup-complete`) and scans triggered by `monitors-changed` wait 30 seconds to let hardware fully settle and avoid firing during hotplug event bursts.
+
+## Contributing
+
+Feel free to submit an issue or pull request.
+
+## Acknowledgments
+
+Thanks to these projects for the ideas and groundwork that made this extension possible.
+
+- [ddcutil](https://github.com/rockowitz/ddcutil)
+- [display-switcher](https://github.com/skandinaff/display-switcher)
+- [Control Monitor Brightness and Volume with ddcutil](https://extensions.gnome.org/extension/6325/control-monitor-brightness-and-volume-with-ddcutil/)
+- [Brightness control using ddcutil](https://github.com/daitj/gnome-display-brightness-ddcutil)
+
+## License
+
+MIT

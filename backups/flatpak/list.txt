@@ -1,4 +1,4 @@
-# Flatpak apps backup (2026-06-19 08:16:25)
+# Flatpak apps backup (2026-06-29 13:19:15)
 be.alexandervanhee.gradia
 com.bilingify.readest
 com.bitwarden.desktop
@@ -16,7 +16,6 @@ io.github.diegopvlk.Cine
 io.github.flattool.Warehouse
 io.github.peazip.PeaZip
 io.github.totoshko88.RustConn
-io.gitlab.news_flash.NewsFlash
 md.obsidian.Obsidian
 me.iepure.devtoolbox
 net.ankiweb.Anki
@@ -29,5 +28,6 @@ org.gnome.Papers
 org.gnome.SoundRecorder
 org.gnome.font-viewer
 org.inkscape.Inkscape
+org.mozilla.firefox
 org.telegram.desktop
 org.videolan.VLC

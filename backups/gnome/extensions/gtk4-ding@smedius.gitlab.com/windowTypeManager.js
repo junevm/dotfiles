@@ -66,6 +66,7 @@ class ManageWindow {
         this._remoteActionGroup = remoteActionGroup ?? null;
         this.windowInstanceId = null;
         this._lastEmittedWindowPosition = null;
+        this._suppressedTrackedWindowPosition = null;
         this._parsedTitleState = null;
         this._trackingWindowPosition = false;
         this._titleID = 0;
@@ -359,8 +360,12 @@ class ManageWindow {
         else
             this._trackingWindowPosition = false;
 
-        if (this._needsMoveToParsedPosition())
-            this._window.move_frame(true, this._x, this._y);
+        if (this._needsMoveToParsedPosition()) {
+            if (this.windowInstanceId)
+                this._moveFrameWithoutTrackingFeedback(true, this._x, this._y);
+            else
+                this._window.move_frame(true, this._x, this._y);
+        }
     }
 
     _hasValidPosition() {
@@ -378,6 +383,15 @@ class ManageWindow {
         return currentX !== this._x || currentY !== this._y;
     }
 
+    _moveFrameWithoutTrackingFeedback(userOp, x, y) {
+        if (!this._window)
+            return;
+
+        this._suppressedTrackedWindowPosition = {x, y};
+        this._lastEmittedWindowPosition = {x, y};
+        this._window.move_frame(userOp, x, y);
+    }
+
     _keepFixedWindowPosition() {
         this._signalIDs.push(
             this._window.connect(
@@ -387,7 +401,15 @@ class ManageWindow {
                         this._hasValidPosition() &&
                         this._needsMoveToParsedPosition()
                     ) {
-                        this._window.move_frame(true, this._x, this._y);
+                        if (this.windowInstanceId) {
+                            this._moveFrameWithoutTrackingFeedback(
+                                true,
+                                this._x,
+                                this._y
+                            );
+                        } else {
+                            this._window.move_frame(true, this._x, this._y);
+                        }
                         if (this._window.fullscreen)
                             this._window.unmake_fullscreen();
                     }
@@ -436,8 +458,12 @@ class ManageWindow {
             )
         );
 
-        if (this._needsMoveToParsedPosition())
-            this._window.move_frame(true, this._x, this._y);
+        if (this._needsMoveToParsedPosition()) {
+            if (this.windowInstanceId)
+                this._moveFrameWithoutTrackingFeedback(true, this._x, this._y);
+            else
+                this._window.move_frame(true, this._x, this._y);
+        }
     }
 
     _moveIntoPlace(force = false) {
@@ -446,8 +472,17 @@ class ManageWindow {
 
         this._moveIntoPlaceID =
             GLib.timeout_add(GLib.PRIORITY_LOW, 250, () => {
-                if (force || this._needsMoveToParsedPosition())
-                    this._window.move_frame(true, this._x, this._y);
+                if (force || this._needsMoveToParsedPosition()) {
+                    if (this.windowInstanceId) {
+                        this._moveFrameWithoutTrackingFeedback(
+                            true,
+                            this._x,
+                            this._y
+                        );
+                    } else {
+                        this._window.move_frame(true, this._x, this._y);
+                    }
+                }
 
 
                 this._moveIntoPlaceID = 0;
@@ -474,6 +509,14 @@ class ManageWindow {
 
         if (!Number.isFinite(x) || !Number.isFinite(y))
             return;
+
+        if (this._suppressedTrackedWindowPosition &&
+            this._suppressedTrackedWindowPosition.x === x &&
+            this._suppressedTrackedWindowPosition.y === y
+        ) {
+            this._suppressedTrackedWindowPosition = null;
+            return;
+        }
 
         if (this._lastEmittedWindowPosition &&
             this._lastEmittedWindowPosition.x === x &&
@@ -720,8 +763,12 @@ class ManageWindow {
             if (this._trackingWindowPosition)
                 return;
 
-            if (this._needsMoveToParsedPosition())
-                this._window.move_frame(true, this._x, this._y);
+            if (this._needsMoveToParsedPosition()) {
+                if (this.windowInstanceId)
+                    this._moveFrameWithoutTrackingFeedback(true, this._x, this._y);
+                else
+                    this._window.move_frame(true, this._x, this._y);
+            }
 
             return;
         }
@@ -1039,13 +1086,11 @@ class HandleDragActors {
 
         this._getModifierKeys();
 
-        if (this.isShift) {
+        if (this.isShift)
             return DND.DragMotionResult.COPY_DROP;
-        }
 
-        if (this.isControl) {
+        if (this.isControl)
             return DND.DragMotionResult.MOVE_DROP;
-        }
 
         return DND.DragMotionResult.CONTINUE;
     }

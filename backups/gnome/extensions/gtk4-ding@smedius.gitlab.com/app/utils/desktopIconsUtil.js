@@ -581,6 +581,7 @@ const DesktopIconsUtil = class {
 
     /**
      * Check if a pdf file is encrypted
+     *
      * @param {Gio.File} file a file Gio of pdf file
      * @param {Gio.Cancellable} cancellable gio cancellable
      * @returns boolean
@@ -616,6 +617,7 @@ const DesktopIconsUtil = class {
 
     /**
      * Check if a zip file is encrypted
+     *
      * @param {Gio.File} file a file Gio of zip file
      * @param {Gio.Cancellable} cancellable gio cancellable
      * @returns boolean
@@ -663,6 +665,7 @@ const DesktopIconsUtil = class {
 
     /**
      * Check if a 7z file is encrypted
+     *
      * @param {Gio.File} file a file Gio of 7z file
      * @returns boolean
      */
@@ -968,8 +971,8 @@ const DesktopIconsUtil = class {
     /**
      * Read JSON from a file. Returns parsed object or null on error.
      *
-     * @param {Gio.File} file
-     * @param {Gio.Cancellable?} cancellable
+     * @param {Gio.File} file File to read JSON from.
+     * @param {Gio.Cancellable?} cancellable Optional cancellable for the read.
      * @returns {Promise<object|null>}
      */
     async readJsonFile(file, cancellable = null) {
@@ -992,9 +995,9 @@ const DesktopIconsUtil = class {
      *
      * Mirrors writeTextFileToPath() by ensuring the parent dir via FileUtils.
      *
-     * @param {Gio.File} file
-     * @param {object} data
-     * @param {Gio.Cancellable?} cancellable
+     * @param {Gio.File} file File to write JSON into.
+     * @param {object} data Plain object to serialize as JSON.
+     * @param {Gio.Cancellable?} cancellable Optional cancellable for the write.
      */
     async writeJsonFile(file, data, cancellable = null) {
         const parent = file.get_parent();

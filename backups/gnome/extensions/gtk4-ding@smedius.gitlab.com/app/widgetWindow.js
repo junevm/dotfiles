@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Gdk, GLib, Graphene, Gtk} from '../dependencies/gi.js';
+import {Gdk, Graphene, Gtk} from '../dependencies/gi.js';
 import {_} from '../dependencies/gettext.js';
 
 export {WidgetWindow};

@@ -44,8 +44,8 @@ const DesktopActions = class {
     _getSushiActivationToken(file) {
         try {
             const display = Gdk.Display.get_default();
-            const appInfo = DesktopAppInfo.new('org.gnome.NautilusPreviewer.desktop')
-                ?? DesktopAppInfo.new('org.gnome.Sushi.desktop');
+            const appInfo = DesktopAppInfo.new('org.gnome.NautilusPreviewer.desktop') ??
+                DesktopAppInfo.new('org.gnome.Sushi.desktop');
 
             const ctx = display.get_app_launch_context();
             const token = ctx.get_startup_notify_id(appInfo, [file]) ?? '';
