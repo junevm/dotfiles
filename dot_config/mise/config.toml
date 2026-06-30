@@ -2,6 +2,7 @@
 "github:junevm/msifancontrol" = "latest"
 "github:junevm/cdns" = "latest"
 "bun" = "latest"
+"pnpm" = "latest"
 
 [tasks."youtube-download"]
 alias = "ytdl"
@@ -34,7 +35,7 @@ description = "Show system stats with btop"
 run = "btop --force-utf"
 
 [tasks.upgrade]
-alias = "up"
+alias = "ug"
 description = "Do a full system upgrade"
 run = [
   "if command -v paru >/dev/null 2>&1; then paru -Syu --noconfirm; else sudo pacman -Syu --noconfirm; fi",
