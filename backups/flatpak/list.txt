@@ -1,4 +1,4 @@
-# Flatpak apps backup (2026-07-06 17:01:58)
+# Flatpak apps backup (2026-07-06 23:29:44)
 ai.lmstudio.lm-studio
 be.alexandervanhee.gradia
 com.bilingify.readest
@@ -18,7 +18,6 @@ io.github.flattool.Warehouse
 io.github.peazip.PeaZip
 io.github.totoshko88.RustConn
 md.obsidian.Obsidian
-me.iepure.devtoolbox
 net.ankiweb.Anki
 net.nokyan.Resources
 org.audacityteam.Audacity
