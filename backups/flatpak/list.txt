@@ -1,4 +1,4 @@
-# Flatpak apps backup (2026-07-06 23:29:44)
+# Flatpak apps backup (2026-07-08 23:05:51)
 ai.lmstudio.lm-studio
 be.alexandervanhee.gradia
 com.bilingify.readest
@@ -28,7 +28,6 @@ org.gnome.Papers
 org.gnome.SoundRecorder
 org.gnome.font-viewer
 org.inkscape.Inkscape
-org.kde.krita
 org.mozilla.firefox
 org.telegram.desktop
 org.videolan.VLC
