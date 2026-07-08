@@ -13,6 +13,6 @@ git add .
 # Commit with timestamp
 git commit -m "Auto backup [$(date '+%B %-d, %Y %H:%M:%S')]" || echo "Nothing to commit"
 
-# Push current branch to all remotes (GitHub, GitLab)
-git remote | xargs -L1 -I R git push R
+# Push current branch to remote repository
+git push
 
