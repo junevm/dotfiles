@@ -345,7 +345,7 @@ run = [
 ]
 
 [tasks."backup:chezmoi"]
-description = "Backup chezmoi-managed dotfiles"
+description = "backup chezmoi-managed dotfiles"
 run = [
   # re-add files that change outside of chezmoi (like bookmarks) to update the source state
   "chezmoi re-add ~/.config/BraveSoftware/Brave-Browser/Default/Bookmarks",
@@ -356,3 +356,12 @@ run = [
   "git diff --cached --quiet || git commit -m \"chezmoi - update $(date '+%B %e, %Y %I:%M %p')\"",
   "git push",
 ]
+
+[tasks."chezmoi:open"]
+description = "open chezmoi source directory in VSCode"
+run = ["code $(chezmoi source-path)"]
+
+
+[tasks."surge:open"]
+description = "open surge download manager"
+run = ["surge"]
