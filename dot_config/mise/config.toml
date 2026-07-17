@@ -148,14 +148,19 @@ git pull
 '''
 
 [tasks."git:ignore-fix"]
-alias = "gigfix"
+alias = "gfix"
 description = "fix gitignore not working https://stackoverflow.com/questions/25436312/gitignore-not-working"
 run = '''
 git rm -rf --cached .
 git add .
 '''
 
-[tasks."open:chezmoi"]
-alias = "o:chezmoi"
-description = "Open chezmoi config directory in vscode"
-run = "code ~/local/share/chezmoi"
+[tasks."chezmoi:open"]
+alias = "co"
+description = "open chezmoi source directory in VSCode"
+run = ["code $(chezmoi source-path)"]
+
+[tasks."surge:open"]
+alias = "dd"
+description = "open surge download manager"
+run = ["surge"]
