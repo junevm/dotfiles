@@ -129,7 +129,7 @@ esac
 """
 
 
-[tasks."git:add-commit"]
+[tasks."git:add-commit:gac"]
 alias = "gac"
 description = "git add and commit"
 run = '''
@@ -140,14 +140,14 @@ echo "changes staged and committed with message: $msg"
 '''
 
 
-[tasks."git:pull"]
+[tasks."git:pull:gp"]
 alias = "gp"
 description = "git pull"
 run = '''
 git pull
 '''
 
-[tasks."git:ignore-fix"]
+[tasks."git:ignore-fix:gfix"]
 alias = "gfix"
 description = "fix gitignore not working https://stackoverflow.com/questions/25436312/gitignore-not-working"
 run = '''
@@ -155,12 +155,12 @@ git rm -rf --cached .
 git add .
 '''
 
-[tasks."chezmoi:open"]
+[tasks."chezmoi:open:co"]
 alias = "co"
 description = "open chezmoi source directory in VSCode"
 run = ["code $(chezmoi source-path)"]
 
-[tasks."surge:open"]
+[tasks."surge:open:dd"]
 alias = "dd"
 description = "open surge download manager"
 run = ["surge"]
