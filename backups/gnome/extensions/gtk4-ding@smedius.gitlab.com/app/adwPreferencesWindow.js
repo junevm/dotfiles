@@ -378,7 +378,11 @@ const aboutApp = class AboutDialog {
         );
 
         aboutDialog.set_release_notes(
-            `<p>* Adw version 100.24 for Gnome 50</p>
+            `<p>* Adw version 100.25 for Gnome 50</p>
+<ul><li>Refactor the metrics widgets to use libgtop for CPU, memory, and network sampling, and reuse shared decoders and samplers to reduce overhead.</li>
+<li>Tighten widget backend lifecycle handling by improving systemd scope error reporting and explicitly tearing down the shared WebKit network session when widgets are turned off.</li>
+<li>Weblate translation update for Thai, Chinese (Simplified Han script), Polish, German, Russian, Slovak, and Kyrgyz.</li></ul>
+            <p>* Adw version 100.24 for Gnome 50</p>
 <ul><li>Add support for downloading and installing the latest widgets from the Add Widget dialog, with a refreshed chooser and widget registry parsing.</li>
 <li>Run the main app and HTML widget backend processes in dedicated systemd cgroup scopes under user.app, with app-prefixed subprocess names, independent of GNOME Shell.</li>
 <li>Improve media player widgets by keeping the last active player selected when multiple players are playing.</li>

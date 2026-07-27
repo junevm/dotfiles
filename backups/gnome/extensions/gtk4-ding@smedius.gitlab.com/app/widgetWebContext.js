@@ -124,6 +124,7 @@ const WebWidgetContext = class {
 
         this._userContentManager = null;
         this._webContext = null;
+        this._networkSession = null;
         this._instanceRoots.clear();
         this._hostMessageGuard.clear();
         this._hostUriGuard.clear();

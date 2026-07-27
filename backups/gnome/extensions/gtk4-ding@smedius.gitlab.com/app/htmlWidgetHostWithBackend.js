@@ -130,17 +130,21 @@ const HtmlWidgetHostWithBackend = class extends HtmlWidgetHost {
             [],
         ]);
 
-        bus.call_sync(
-            'org.freedesktop.systemd1',
-            '/org/freedesktop/systemd1',
-            'org.freedesktop.systemd1.Manager',
-            'StartTransientUnit',
-            params,
-            null,
-            Gio.DBusCallFlags.NONE,
-            -1,
-            null
-        );
+        try {
+            bus.call_sync(
+                'org.freedesktop.systemd1',
+                '/org/freedesktop/systemd1',
+                'org.freedesktop.systemd1.Manager',
+                'StartTransientUnit',
+                params,
+                null,
+                Gio.DBusCallFlags.NONE,
+                -1,
+                null
+            );
+        } catch (e) {
+            console.error(`Failed to move ${description} to systemd scope:`, e);
+        }
     }
 
     async _startBackend(inst) {

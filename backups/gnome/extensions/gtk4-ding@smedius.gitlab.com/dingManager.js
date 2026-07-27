@@ -841,17 +841,21 @@ var LaunchSubprocess = class {
             [],
         ]);
 
-        bus.call_sync(
-            'org.freedesktop.systemd1',
-            '/org/freedesktop/systemd1',
-            'org.freedesktop.systemd1.Manager',
-            'StartTransientUnit',
-            params,
-            null,
-            Gio.DBusCallFlags.NONE,
-            -1,
-            null
-        );
+        try {
+            bus.call_sync(
+                'org.freedesktop.systemd1',
+                '/org/freedesktop/systemd1',
+                'org.freedesktop.systemd1.Manager',
+                'StartTransientUnit',
+                params,
+                null,
+                Gio.DBusCallFlags.NONE,
+                -1,
+                null
+            );
+        } catch (e) {
+            console.error(`Failed to move ${appID} to its own slice & scope:`, e);
+        }
     }
 
     /**

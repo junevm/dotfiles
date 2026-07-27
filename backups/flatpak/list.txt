@@ -1,4 +1,4 @@
-# Flatpak apps backup (2026-07-17 10:11:28)
+# Flatpak apps backup (2026-07-27 07:59:53)
 ai.lmstudio.lm-studio
 com.bilingify.readest
 com.bitwarden.desktop
@@ -10,14 +10,15 @@ com.google.AndroidStudio
 com.mattjakeman.ExtensionManager
 de.haeckerfelix.AudioSharing
 io.dbeaver.DBeaverCommunity
+io.github.diegopvlk.Cine
 io.github.flattool.Warehouse
 io.github.peazip.PeaZip
 io.github.totoshko88.RustConn
 md.obsidian.Obsidian
 net.ankiweb.Anki
 net.nokyan.Resources
-org.audacityteam.Audacity
 org.cryptomator.Cryptomator
+org.freedownloadmanager.Manager
 org.gimp.GIMP
 org.gnome.Papers
 org.gnome.SoundRecorder
