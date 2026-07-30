@@ -1,6 +1,6 @@
 /* DING: Desktop Icons New Generation for GNOME Shell
  *
- * Adw-DING Copyright (C) 2022, 2025 Sundeep Mediratta (smedius@gmail.com)
+ * Adw-DING Copyright (C) 2022, 2025, 2026 Sundeep Mediratta (smedius@gmail.com)
  * Based on code original (C) Carlos Soriano and (c) Sergio Costas
  *
  * This program is free software: you can redistribute it and/or modify
@@ -70,13 +70,18 @@ const DesktopFileIcon = class extends FileItemIcon {
     }
 
     _getActions() {
+        this.desktopAppInfo = null;
+        this.actionMap = new Map();
+        this._actionmenu = null;
+
         if (!this.trustedDesktopFile)
             return;
 
         this.desktopAppInfo =
             DesktopAppInfo.new_from_filename(this.path);
 
-        this.actionMap = new Map();
+        if (!this.desktopAppInfo)
+            return;
 
         const actions = this.desktopAppInfo.list_actions();
 
@@ -86,6 +91,13 @@ const DesktopFileIcon = class extends FileItemIcon {
 
             this.actionMap.set(actionName, action);
         });
+    }
+
+    _destroy() {
+        this.desktopAppInfo = null;
+        this.actionMap = new Map();
+        this._actionmenu = null;
+        super._destroy();
     }
 
     _makeActionMenu() {

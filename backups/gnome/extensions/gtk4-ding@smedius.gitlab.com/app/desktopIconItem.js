@@ -1,7 +1,7 @@
 
 /* DING: Desktop Icons New Generation for GNOME Shell
  *
- * Gtk4 Port Copyright (C) 2022- 2025 Sundeep Mediratta (smedius@gmail.com)
+ * Gtk4 Port Copyright (C) 2022- 2026 Sundeep Mediratta (smedius@gmail.com)
  * Copyright (C) 2021 Sundeep Mediratta (smedius@gmail.com)
  * Copyright (C) 2019 Sergio Costas (rastersoft@gmail.com)
  * Based on code original (C) Carlos Soriano
@@ -25,8 +25,6 @@ import {Gtk, Gdk, Gio, Graphene, Gsk, GLib, Pango, GdkPixbuf}
 import {_} from '../dependencies/gettext.js';
 
 export {DesktopIconItem};
-
-const Signals = imports.signals;
 
 const PIXBUF_CONTENT_TYPES = new Set();
 
@@ -59,6 +57,14 @@ const DesktopIconItem = class {
         this._normalCoordinates = null;
         this._monitorIndex = null;
         this._destroyed = false;
+        this._containerId = 0;
+        this._iconStateFlag = 0;
+        this._labelStateFlag = 0;
+        this._iconContainerEventController = null;
+        this._iconContainerEventControllerEnterId = 0;
+        this._iconContainerEventControllerLeaveId = 0;
+        this.dragIcon = null;
+        this.dragIconSignal = 0;
         this.thumbnail = null;
         this.thumbnailFile = null;
     }
@@ -86,6 +92,12 @@ const DesktopIconItem = class {
         if (this._updateIconCancellable)
             this._updateIconCancellable.cancel();
 
+        if (this._icon)
+            this._icon.set_paintable(null);
+
+        this.thumbnail = null;
+        this.thumbnailFile = null;
+
         /* Container */
         if (this._containerId) {
             this.container.disconnect(this._containerId);
@@ -93,21 +105,62 @@ const DesktopIconItem = class {
         }
 
         /* DragItem */
-        if (this.dragIconSignal)
+        if (this.dragIconSignal) {
             this.dragIcon.disconnect(this.dragIconSignal);
+            this.dragIconSignal = 0;
+        }
 
-        if (this._iconStateFlag)
+        if (this.dragIcon)
+            this.dragIcon.set_widget(null);
+        this.dragIcon = null;
+
+        if (this._iconStateFlag) {
             this._iconContainer.disconnect(this._iconStateFlag);
+            this._iconStateFlag = 0;
+        }
 
-        if (this._labelStateFlag)
+        if (this._labelStateFlag) {
             this._labelContainer.disconnect(this._labelStateFlag);
+            this._labelStateFlag = 0;
+        }
+
+        if (this._iconContainerEventController) {
+            if (this._iconContainerEventControllerEnterId) {
+                this._iconContainerEventController.disconnect(
+                    this._iconContainerEventControllerEnterId
+                );
+                this._iconContainerEventControllerEnterId = 0;
+            }
+
+            if (this._iconContainerEventControllerLeaveId) {
+                this._iconContainerEventController.disconnect(
+                    this._iconContainerEventControllerLeaveId
+                );
+                this._iconContainerEventControllerLeaveId = 0;
+            }
+
+            if (this._icon)
+                this._icon.remove_controller(this._iconContainerEventController);
+
+            this._iconContainerEventController = null;
+        }
 
         this._destroyToolTip();
+
+        this._icon = null;
+        this._iconContainer = null;
+        this._label = null;
+        this._labelContainer = null;
+        this.container = null;
     }
 
     onDestroy() {
-        this._destroy();
+        if (this._destroyed)
+            return;
+
         this._destroyed = true;
+        this._resolveIconPlaced();
+        this._destroy();
     }
 
     /** *********************
@@ -170,13 +223,15 @@ const DesktopIconItem = class {
 
         this._icon.add_controller(this._iconContainerEventController);
 
-        this._iconContainerEventController.connect('enter', () => {
-            this._showToolTip();
-        });
+        this._iconContainerEventControllerEnterId =
+            this._iconContainerEventController.connect('enter', () => {
+                this._showToolTip();
+            });
 
-        this._iconContainerEventController.connect('leave', () => {
-            this._destroyToolTip();
-        });
+        this._iconContainerEventControllerLeaveId =
+            this._iconContainerEventController.connect('leave', () => {
+                this._destroyToolTip();
+            });
 
         // This controls how the icons look - Rectangular or skinny trapezoid
 
@@ -235,12 +290,24 @@ const DesktopIconItem = class {
 
         this._calculateIconRectangle();
         this._calculateLabelRectangle();
-        this.iconPlacedPromiseResolve(true);
+        this._resolveIconPlaced();
     }
 
     iconPlaced = new Promise(resolve => {
         this.iconPlacedPromiseResolve = resolve;
     });
+
+    _resolveIconPlaced() {
+        if (!this.iconPlacedPromiseResolve)
+            return;
+
+        this.iconPlacedPromiseResolve(true);
+        this.iconPlacedPromiseResolve = null;
+    }
+
+    iconCannotBeShown() {
+        this._resolveIconPlaced();
+    }
 
     _calculateIconRectangle() {
         this.iconwidth = this._iconContainer.get_allocated_width();
@@ -684,106 +751,122 @@ const DesktopIconItem = class {
 
         this._updateIconCancellable = cancellable;
 
-        if (this.Prefs.darkText) {
-            this._label.remove_css_class('file-label');
-            this._label.add_css_class('file-label-dark');
-        } else {
-            this._label.remove_css_class('file-label-dark');
-            this._label.add_css_class('file-label');
-        }
-
         try {
-            const customIcon =
-                this._fileInfo.get_attribute_as_string('metadata::custom-icon');
-
-            if (customIcon && (customIcon !== '')) {
-                const customIconFile = Gio.File.new_for_uri(customIcon);
-
-                if (await this._loadImageAsIcon(customIconFile, cancellable))
-                    return;
+            if (this.Prefs.darkText) {
+                this._label.remove_css_class('file-label');
+                this._label.add_css_class('file-label-dark');
+            } else {
+                this._label.remove_css_class('file-label-dark');
+                this._label.add_css_class('file-label');
             }
 
-            if (this.thumbnailFile && (this.thumbnailFile !== '')) {
-                const customIconFile = Gio.File.new_for_path(this.thumbnailFile);
+            try {
+                const customIcon =
+                    this._fileInfo.get_attribute_as_string('metadata::custom-icon');
 
-                if (await this.FileUtils.queryExists(customIconFile)) {
-                    const loadedImage =
-                        await this._loadImageAsIcon(customIconFile, cancellable);
+                if (customIcon && (customIcon !== '')) {
+                    const customIconFile = Gio.File.new_for_uri(customIcon);
 
-                    if (loadedImage | this._destroyed)
+                    if (await this._loadImageAsIcon(customIconFile, cancellable))
+                        return;
+
+                    if (this._destroyed || !this._icon)
                         return;
                 }
+
+                if (this.thumbnailFile && (this.thumbnailFile !== '')) {
+                    const customIconFile = Gio.File.new_for_path(this.thumbnailFile);
+
+                    if (await this.FileUtils.queryExists(customIconFile)) {
+                        if (this._destroyed || !this._icon)
+                            return;
+
+                        const loadedImage =
+                            await this._loadImageAsIcon(customIconFile, cancellable);
+
+                        if (loadedImage || this._destroyed)
+                            return;
+                    }
+                }
+            } catch (error) {
+                if (error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    throw error;
+
+                console.error(error, `Error while updating icon: ${error.message}`);
             }
-        } catch (error) {
-            if (error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                throw error;
 
-            console.error(error, `Error while updating icon: ${error.message}`);
-        }
+            if (this._fileTypeEnum === this.Enums.FileType.USER_DIRECTORY_TRASH) {
+                let pixbuf =
+                    this._createEmblemedIcon(this._fileInfo.get_icon(), null);
 
-        if (this._fileTypeEnum === this.Enums.FileType.USER_DIRECTORY_TRASH) {
-            let pixbuf =
-                this._createEmblemedIcon(this._fileInfo.get_icon(), null);
+                if (cancellable.is_cancelled() || this._destroyed || !this._icon)
+                    return;
 
-            if (cancellable.is_cancelled())
+                this._icon.set_paintable(null);
+                this._icon.set_paintable(pixbuf);
                 return;
-
-            this._icon.set_paintable(pixbuf);
-            return;
-        }
-
-        let iconSet = false;
-
-        if (this.Prefs.showImageThumbnails) {
-            try {
-                if (!this.thumbnail) {
-                    this.thumbnail =
-                        await this.ThumbnailLoader.getThumbnail(
-                            this,
-                            cancellable
-                        );
-                }
-
-                if (this.thumbnail !== null) {
-                    const thumbnailFile = Gio.File.new_for_path(this.thumbnail);
-                    iconSet =
-                        await this._loadImageAsIcon(thumbnailFile, cancellable);
-                }
-            } catch (e) {
-                if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                    throw e;
-
-                console.error(
-                    e, `Error while generating thumbnail: ${e.message}`
-                );
             }
-        }
 
-        if (!iconSet) {
-            let iconPaintable;
+            let iconSet = false;
 
-            if (this._isBrokenSymlink) {
-                iconPaintable =
-                    this._createEmblemedIcon(null, 'text-x-generic');
-            } else if (this._desktopFile && this._desktopFile.has_key('Icon')) {
-                iconPaintable =
-                    this._createEmblemedIcon(
-                        null,
-                        this._desktopFile.get_string('Icon')
+            if (this.Prefs.showImageThumbnails) {
+                try {
+                    if (!this.thumbnail) {
+                        this.thumbnail =
+                            await this.ThumbnailLoader.getThumbnail(
+                                this,
+                                cancellable
+                            );
+
+                        if (this._destroyed || !this._icon)
+                            return;
+                    }
+
+                    if (this.thumbnail !== null) {
+                        const thumbnailFile = Gio.File.new_for_path(this.thumbnail);
+                        iconSet =
+                            await this._loadImageAsIcon(thumbnailFile, cancellable);
+
+                        if (this._destroyed || !this._icon)
+                            return;
+                    }
+                } catch (e) {
+                    if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                        throw e;
+
+                    console.error(
+                        e, `Error while generating thumbnail: ${e.message}`
                     );
-            } else {
-                iconPaintable =
-                    this._createEmblemedIcon(this._getDefaultIcon(), null);
+                }
             }
 
-            if (cancellable.is_cancelled())
-                return;
+            if (!iconSet) {
+                let iconPaintable;
 
-            this._icon.set_paintable(iconPaintable);
+                if (this._isBrokenSymlink) {
+                    iconPaintable =
+                        this._createEmblemedIcon(null, 'text-x-generic');
+                } else if (this._desktopFile && this._desktopFile.has_key('Icon')) {
+                    iconPaintable =
+                        this._createEmblemedIcon(
+                            null,
+                            this._desktopFile.get_string('Icon')
+                        );
+                } else {
+                    iconPaintable =
+                        this._createEmblemedIcon(this._getDefaultIcon(), null);
+                }
+
+                if (cancellable.is_cancelled() || this._destroyed || !this._icon)
+                    return;
+
+                this._icon.set_paintable(null);
+                this._icon.set_paintable(iconPaintable);
+            }
+        } finally {
+            if (this._updateIconCancellable === cancellable)
+                this._updateIconCancellable = null;
         }
-
-        if (cancellable === this._updateIconCancellable)
-            this._updateIconCancellable = null;
     }
 
     _getDefaultIcon() {
@@ -794,6 +877,10 @@ const DesktopIconItem = class {
         try {
             const [thumbnailData] =
                 await imageFile.load_bytes_async(cancellable);
+
+            if (this._destroyed || !this._icon)
+                return false;
+
             const iconTexture =
                 Gdk.Texture.new_from_bytes(thumbnailData);
 
@@ -814,9 +901,16 @@ const DesktopIconItem = class {
                 Math.floor(height)
             );
 
+            if (this._destroyed || !this._icon)
+                return false;
+
             let icon = iconPaintableSnapshot.to_paintable(null);
             icon = this._addEmblemsToIconIfNeeded(icon);
 
+            if (this._destroyed || !this._icon)
+                return false;
+
+            this._icon.set_paintable(null);
             this._icon.set_paintable(icon);
 
             return true;
@@ -1044,4 +1138,3 @@ const DesktopIconItem = class {
         this._monitorIndex = index;
     }
 };
-Signals.addSignalMethods(DesktopIconItem.prototype);

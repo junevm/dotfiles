@@ -66,6 +66,7 @@ export const DefaultShortcuts = {
     textEntryAccelsTurnOff: {Hint: _('Text Entry Accels Turn Off'), Accel: ''},
     newDocument: {Hint: _('New Document'), Accel: ''},
     showShortcutViewer: {Hint: _('Show Shortcut Viewer'), Accel: '', Edit: true},
+    forceGC: {Hint: _('Force Garbage Collection'), Accel: '', Edit: true},
     toggleVisibility: {Hint: _('Show Or Hide Desktop Icons'), Accel: '', Global: true},
     // FileItem Menu Actions
     openMultipleFileAction: {Hint: 'Open All', Accel: '<Control>Return', Edit: true},

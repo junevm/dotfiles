@@ -2,7 +2,7 @@
 
 /* ADW-DING: Desktop Icons New Generation for GNOME Shell
  *
- * Copyright (C) 2025 Sundeep Mediratta
+ * Copyright (C) 2025, 2026 Sundeep Mediratta
  * Based on code original (C) Carlos Soriano (C) Sergio Costas
  *
  * This program is free software: you can redistribute it and/or modify
@@ -188,6 +188,24 @@ const adWDingApp = GObject.registerClass(
 
             this.Utils.DesktopIconsUtil =
                 new DesktopIconsUtil.DesktopIconsUtil(this.Data, this.Utils);
+
+            this._addDebugActions(app);
+        }
+
+        _addDebugActions(app) {
+            const forceGCAction = Gio.SimpleAction.new('forceGC', null);
+            forceGCAction.connect('activate', () => {
+                const gc = System.gc;
+                if (typeof gc !== 'function') {
+                    console.log('[ding][gc] System.gc() is unavailable');
+                    return;
+                }
+
+                console.log('[ding][gc] forced collection requested');
+                gc();
+                console.log('[ding][gc] forced collection completed');
+            });
+            app.add_action(forceGCAction);
         }
 
         _onActivate() {

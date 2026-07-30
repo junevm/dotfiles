@@ -1,7 +1,7 @@
 
 /* DING: Desktop Icons New Generation for GNOME Shell
  *
- * Copyright (C) Gtk4 port 2022, 2025 Sundeep Mediratta (smedius@gmail.com)
+ * Copyright (C) Gtk4 port 2022, 2025, 2026 Sundeep Mediratta (smedius@gmail.com)
  * Copyright (C) 2019 Sergio Costas (rastersoft@gmail.com)
  * Based on code original (C) Carlos Soriano
  * SwitcherooControl code based on code original from Marsch84
@@ -23,8 +23,6 @@ import {Gdk, Gio, Graphene, Gtk, Gsk, GLib} from '../dependencies/gi.js';
 import * as DesktopIconItem from './desktopIconItem.js';
 
 export {StackItem};
-
-const Signals = imports.signals;
 
 const StackItem = class extends DesktopIconItem.DesktopIconItem {
     constructor(desktopManager, file, attributeContentType, fileTypeEnum) {
@@ -121,6 +119,7 @@ const StackItem = class extends DesktopIconItem.DesktopIconItem {
     _createStackTopIcon() {
         const stackIcon = this._createStackedAttributeContentTypeIcon();
         const iconPaintable = this._addEmblemsToIconIfNeeded(stackIcon);
+        this._icon.set_paintable(null);
         this._icon.set_paintable(iconPaintable);
     }
 
@@ -233,4 +232,3 @@ const StackItem = class extends DesktopIconItem.DesktopIconItem {
     set savedCoordinates(pos) {
     }
 };
-Signals.addSignalMethods(StackItem.prototype);

@@ -1,5 +1,5 @@
 /*
- * Adw-DING Copyright (C) 2022, 2025 Sundeep Mediratta (smedius@gmail.com)
+ * Adw-DING Copyright (C) 2022, 2025, 2026 Sundeep Mediratta (smedius@gmail.com)
  * Based on code original (C) Carlos Soriano and (c) Sergio Costas
  *
  * This program is free software: you can redistribute it and/or modify
@@ -77,13 +77,19 @@ const SymLinkIcon = class {
             }
 
             _destroy() {
-                super._destroy();
+                if (this._symlinkFileMonitor) {
+                    if (this._symlinkFileMonitorId) {
+                        this._symlinkFileMonitor.disconnect(
+                            this._symlinkFileMonitorId
+                        );
+                        this._symlinkFileMonitorId = 0;
+                    }
 
-                if (this._symlinkFileMonitorId) {
-                    this._symlinkFileMonitor.disconnect(this._symlinkFileMonitorId);
                     this._symlinkFileMonitor.cancel();
-                    this._symlinkFileMonitorId = 0;
+                    this._symlinkFileMonitor = null;
                 }
+
+                super._destroy();
             }
 
             async _doOpenContext(context, fileList) {

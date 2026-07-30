@@ -1,6 +1,6 @@
 /* DING: Desktop Icons New Generation for GNOME Shell
  *
- * Gtk4 Port Copyright (C) 2022-25 Sundeep Mediratta (smedius@gmail.com)
+ * Gtk4 Port Copyright (C) 2022-26 Sundeep Mediratta (smedius@gmail.com)
  * Copyright (C) 2019 Sergio Costas (rastersoft@gmail.com)
  * Based on code original (C) Carlos Soriano
  *
@@ -821,6 +821,7 @@ const DesktopManager = class {
                 .addFileItemCloseTo(fileItem, desktopX, desktopY, storeMode);
             } else {
                 console.log('Not enough space to add icons');
+                fileItem.iconCannotBeShown();
             }
         }
     }

@@ -378,7 +378,9 @@ const aboutApp = class AboutDialog {
         );
 
         aboutDialog.set_release_notes(
-            `<p>* Adw version 100.25 for Gnome 50</p>
+            `<p>* Adw version 100.26 for Gnome 50</p>
+<ul><li>Fix memory leak with heavy disc activity and long Adw.Ding uptimes by serializing desktop refreshes so directory enumeration and the matching draw finish before the next refresh is queued.</li></ul>
+            <p>* Adw version 100.25 for Gnome 50</p>
 <ul><li>Refactor the metrics widgets to use libgtop for CPU, memory, and network sampling, and reuse shared decoders and samplers to reduce overhead.</li>
 <li>Tighten widget backend lifecycle handling by improving systemd scope error reporting and explicitly tearing down the shared WebKit network session when widgets are turned off.</li>
 <li>Weblate translation update for Thai, Chinese (Simplified Han script), Polish, German, Russian, Slovak, and Kyrgyz.</li></ul>

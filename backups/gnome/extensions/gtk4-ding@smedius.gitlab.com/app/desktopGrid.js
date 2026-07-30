@@ -1,6 +1,6 @@
 /* DING: Desktop Icons New Generation for GNOME Shell
  *
- * Gtk4 Port Copyright (C) 2022 - 2025 Sundeep Mediratta (smedius@gmail.com)
+ * Gtk4 Port Copyright (C) 2022 - 2026 Sundeep Mediratta (smedius@gmail.com)
  * Copyright (C) 2019 Sergio Costas (rastersoft@gmail.com)
  * Based on code original (C) Carlos Soriano
  *
@@ -3029,8 +3029,9 @@ const DesktopGrid = class extends WidgetGrid {
                         resolve(snap.to_paintable(size));
                     } catch (ee) {
                         logError(ee);
-                        const gdkpic =
-                            Gtk.WidgetPaintable.new(widget).get_current_image();
+                        const widgetPaintable = Gtk.WidgetPaintable.new(widget);
+                        const gdkpic = widgetPaintable.get_current_image();
+                        widgetPaintable.set_widget(null);
                         resolve(gdkpic);
                     }
                     return GLib.SOURCE_REMOVE;
