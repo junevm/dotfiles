@@ -30,12 +30,18 @@ yt-dlp \
 """
 
 
-[tasks.stats]
+[tasks.system-stats]
+alias = "sys"
 description = "Show system stats with btop"
 run = "btop --force-utf"
 
-[tasks.upgrade]
-alias = "ug"
+[tasks.system-info]
+alias = "info"
+description = "Show system information with fastfetch"
+run = "fastfetch"
+
+[tasks.system-upgrade]
+alias = "update"
 description = "Do a full system upgrade"
 run = [
   "if command -v paru >/dev/null 2>&1; then paru -Syu --noconfirm; else sudo pacman -Syu --noconfirm; fi",
@@ -43,23 +49,26 @@ run = [
   "flatpak update -y && flatpak uninstall --unused -y",
 ]
 
-[tasks.backup]
-alias = "bk"
+[tasks.dotfiles-backup]
+alias = "backup"
 description = "backup dotfiles and obsidian vault"
 run = [
   "echo 'backing up vault...' && ~/scripts/backup-obsidian.sh",
   "echo 'backing up dotfiles...' && cd ~/.local/share/chezmoi && mise run backup",
 ]
 
-[tasks.fan]
+[tasks.fan-control]
+alias = "fan"
 description = "Control fan speed with msifancontrol"
 run = "msifancontrol"
 
-[tasks.dns]
+[tasks.dns-switch]
+alias = "dns"
 description = "Change DNS interactively using cdns"
 run = "cdns"
 
-[tasks.gpu]
+[tasks.gpu-mode]
+alias = "gpu"
 description = "Interactive GPU mode selector (status/integrated/hybrid/nvidia)"
 run = """
 set -u
@@ -129,8 +138,8 @@ esac
 """
 
 
-[tasks."git:add-commit:gac"]
-alias = "gac"
+[tasks.git-commit]
+alias = "gcm"
 description = "git add and commit"
 run = '''
 read -p "Enter commit message: " msg
@@ -140,14 +149,14 @@ echo "changes staged and committed with message: $msg"
 '''
 
 
-[tasks."git:pull:gp"]
-alias = "gp"
+[tasks.git-pull]
+alias = "gpl"
 description = "git pull"
 run = '''
 git pull
 '''
 
-[tasks."git:ignore-fix:gfix"]
+[tasks.git-fix-ignore]
 alias = "gfix"
 description = "fix gitignore not working https://stackoverflow.com/questions/25436312/gitignore-not-working"
 run = '''
@@ -155,12 +164,12 @@ git rm -rf --cached .
 git add .
 '''
 
-[tasks."chezmoi:open:co"]
-alias = "co"
+[tasks.chezmoi-open]
+alias = "chezmoi"
 description = "open chezmoi source directory in VSCode"
 run = ["code $(chezmoi source-path)"]
 
-[tasks."surge:open:dd"]
-alias = "dd"
+[tasks.surge-open]
+alias = "surge"
 description = "open surge download manager"
 run = ["surge"]
