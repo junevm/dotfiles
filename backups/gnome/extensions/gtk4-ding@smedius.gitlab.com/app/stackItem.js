@@ -34,19 +34,12 @@ const StackItem = class extends DesktopIconItem.DesktopIconItem {
         this._size = null;
         this._modifiedTime = null;
         this._attributeContentType = attributeContentType;
-        this._createIconActor();
-        this._createStackTopIcon();
         const stackName = this._file;
         /** TRANSLATORS: when using a screen reader,
          * this is the text read when a stack is
          * selected. Example: if a stack named "pictures"
          *  is selected, it will say "Stack pictures" */
-        const accessibleName = _('Stack');
         this._setLabelName(stackName);
-        this.container.update_property(
-            [Gtk.AccessibleProperty.LABEL],
-            [`${accessibleName} ${stackName}`]
-        );
         this._savedCoordinates = null;
     }
 
@@ -117,6 +110,9 @@ const StackItem = class extends DesktopIconItem.DesktopIconItem {
     }
 
     _createStackTopIcon() {
+        if (!this._icon)
+            return;
+
         const stackIcon = this._createStackedAttributeContentTypeIcon();
         const iconPaintable = this._addEmblemsToIconIfNeeded(stackIcon);
         this._icon.set_paintable(null);
@@ -141,6 +137,26 @@ const StackItem = class extends DesktopIconItem.DesktopIconItem {
     }
 
     updateIcon() {
+        if (this._destroying)
+            return;
+
+        if (!this._icon || !this._label) {
+            this._pendingIconUpdate = true;
+            return;
+        }
+
+        this._createStackTopIcon();
+    }
+
+    _onIconActorCreated() {
+        const stackName = this._file;
+        const accessibleName = _('Stack');
+
+        this._setLabelName(stackName);
+        this.container.update_property(
+            [Gtk.AccessibleProperty.LABEL],
+            [`${accessibleName} ${stackName}`]
+        );
         this._createStackTopIcon();
     }
 

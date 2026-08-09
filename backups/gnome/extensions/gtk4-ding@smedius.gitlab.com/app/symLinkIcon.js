@@ -59,6 +59,8 @@ const SymLinkIcon = class {
             }
 
             _updateMetadataFromFileInfo(fileInfo) {
+                super._updateMetadataFromFileInfo(fileInfo);
+
                 this._isSymlink = fileInfo.get_attribute_boolean(
                     Gio.FILE_ATTRIBUTE_STANDARD_IS_SYMLINK
                 );
@@ -72,11 +74,11 @@ const SymLinkIcon = class {
                 this._isBrokenSymlink =
                     this._isSymlink &&
                     this._fileType === Gio.FileType.SYMBOLIC_LINK;
-
-                super._updateMetadataFromFileInfo(fileInfo);
             }
 
             _destroy() {
+                this._destroying = true;
+
                 if (this._symlinkFileMonitor) {
                     if (this._symlinkFileMonitorId) {
                         this._symlinkFileMonitor.disconnect(
@@ -134,17 +136,7 @@ const SymLinkIcon = class {
             }
 
             async _updateSymlinkIcon() {
-                await this._reloadIcon().catch(e => {
-                    if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
-                        console.error(
-                            e,
-                            `Exception while updating ${
-                                this._getVisibleName()
-                                    ? this._getVisibleName()
-                                    : 'symlink icon'
-                            }: ${e.message}`);
-                    }
-                });
+                await this.reloadIcon();
             }
 
             _addEmblemsToIconIfNeeded(iconPaintable, position = 0) {

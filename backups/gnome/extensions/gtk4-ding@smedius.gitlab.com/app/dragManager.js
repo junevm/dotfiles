@@ -108,41 +108,43 @@ const DragManager = class {
         });
     }
 
-    async _detectURLorText(dropData, dropCoordinates) {
-    /**
-     * Checks to see if a string is a URL
-     *
-     * @param {string} str A text URL
-     * @returns {boolean} if the string is a URL
-     */
-        function isValidURL(str) {
-            var pattern = new RegExp('^(https|http|ftp|rtsp|mms)?:\\/\\/?' +
-        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' +
-        '((\\d{1,3}\\.){3}\\d{1,3}))' +
-        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
-        '(\\?[;&a-z\\d%_.~+=-]*)?' +
-        '(\\#[-a-z\\d_]*)?$', 'i');
-            return !!pattern.test(str);
-        }
+    _isValidURL(text) {
+        try {
+            const uri = GLib.Uri.parse(text, GLib.UriFlags.NONE);
+            const scheme = uri.get_scheme()?.toLowerCase();
 
+            if (!['http', 'https', 'ftp', 'rtsp', 'mms'].includes(scheme))
+                return false;
+
+            return !!uri.get_host();
+        } catch (e) {
+            return false;
+        }
+    }
+
+    async _detectURLorText(dropData, dropCoordinates) {
         const text = dropData.toString();
 
         if (text === '')
             return;
 
-        if (isValidURL(text)) {
+        if (this._isValidURL(text)) {
             await this._writeURLlinktoDesktop(text, dropCoordinates);
-        } else {
-            let filename = 'Dragged Text';
-            const now = Date().valueOf().split(' ').join('').replace(/:/g, '-');
-            filename = `${filename}-${now}`;
-            await this._DesktopIconsUtil.writeTextFileToPath(
-                text,
-                this._desktopDir,
-                filename,
-                dropCoordinates
-            );
+            return;
         }
+
+        await this._writeDraggedTextToDesktop(text, dropCoordinates);
+    }
+
+    async _writeDraggedTextToDesktop(text, dropCoordinates) {
+        const now = Date().valueOf().split(' ').join('').replace(/:/g, '-');
+        const filename = `Dragged Text-${now}`;
+        await this._DesktopIconsUtil.writeTextFileToPath(
+            text,
+            this._desktopDir,
+            filename,
+            dropCoordinates
+        );
     }
 
     async _writeURLlinktoDesktop(link, dropCoordinates) {
@@ -567,7 +569,7 @@ const DragManager = class {
         case this._Enums.DndTargetInfo.TEXT_PLAIN:
             returnAction = Gdk.DragAction.COPY;
             dropCoordinates = [xGlobalDestination, yGlobalDestination];
-            this._detectURLorText(dropData, dropCoordinates);
+            this._detectURLorText(dropData, dropCoordinates).catch(e => logError(e));
             break;
         default:
             returnAction = Gdk.DragAction.COPY;

@@ -835,7 +835,7 @@ var LaunchSubprocess = class {
         ];
 
         const params = new GLib.Variant('(ssa(sv)a(sa(sv)))', [
-            `app-${appID}-main.scope`,
+            `app-${appID}-main-${pid}.scope`,
             'replace',
             properties,
             [],

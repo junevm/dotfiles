@@ -10,7 +10,7 @@ RESTORE_STATE_SUBDIR = ".local/state/dotfiles/restore"
 # Space-separated package names only.
 # Single source of truth for install targets (repo + AUR mixed allowed).
 # Installer logic uses paru only.
-INSTALL_PACKAGES = "ttf-google-sans ttf-jetbrains-mono-nerd bibata-cursor-theme-bin usage base-devel podman podman-compose podman-docker aria2 ffmpeg syncthing  mise starship yt-dlp gnome-boxes gnome-software brave-bin cronie libreoffice-fresh gufw cachyos-gaming-meta cachyos-gaming-applications nautilus-open-in-ptyxis xterm envycontrol visual-studio-code-bin glab github-cli waydroid gnome-remote-desktop lact"
+INSTALL_PACKAGES = "ttf-google-sans ttf-jetbrains-mono-nerd bibata-cursor-theme-bin usage base-devel podman podman-compose podman-docker aria2 ffmpeg syncthing  mise starship yt-dlp gnome-boxes gnome-software brave-bin cronie libreoffice-fresh gufw cachyos-gaming-meta cachyos-gaming-applications nautilus-open-in-ptyxis xterm envycontrol visual-studio-code-bin glab github-cli waydroid gnome-remote-desktop lact rclone"
 # Put optional removals in PACMAN_REMOVE_PACKAGES.
 PACMAN_REMOVE_PACKAGES = "showtime shelly nvtop nano nano-syntax-highlighting firefox alacritty meld evince sushi papers gnome-system-monitor"
 
@@ -286,7 +286,7 @@ run = [
   "if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then git remote set-url origin \"$GIT_REMOTE_URL\" || true; fi",
 ]
 
-[tasks.backup]
+[tasks.backups]
 description = "Backup system files and settings"
 run = [
   "mise run backup:clean",

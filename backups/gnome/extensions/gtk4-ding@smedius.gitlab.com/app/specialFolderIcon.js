@@ -31,23 +31,27 @@ const SpecialFolderIcon = class extends FileItemIcon {
         this._isTrash =
             this._fileTypeEnum === this.Enums.FileType.USER_DIRECTORY_TRASH;
 
-        if (this.isTrash) {
-            // if this icon is the trash, monitor the state of the
-            //  directory to update the icon
+
+        this._monitorTrashDir = null;
+        this._monitorTrashId = 0;
+
+        if (this.isTrash)
             this._monitorTrash();
-        } else {
-            this._monitorTrashId = 0;
-        }
     }
 
     _destroy() {
-        super._destroy();
+        this._destroying = true;
+
         /* Trash */
         if (this._monitorTrashId) {
             this._monitorTrashDir.disconnect(this._monitorTrashId);
             this._monitorTrashDir.cancel();
             this._monitorTrashId = 0;
         }
+
+        this._monitorTrashDir = null;
+
+        super._destroy();
     }
 
     _setFileName(text) {
@@ -81,6 +85,10 @@ const SpecialFolderIcon = class extends FileItemIcon {
         }
     }
 
+    _onIconActorCreated() {
+        super._onIconActorCreated();
+    }
+
     _updateMetadataFromFileInfo(fileInfo) {
         super._updateMetadataFromFileInfo(fileInfo);
 
@@ -112,17 +120,7 @@ const SpecialFolderIcon = class extends FileItemIcon {
         case Gio.FileMonitorEvent.MOVED_OUT:
         case Gio.FileMonitorEvent.CREATED:
         case Gio.FileMonitorEvent.MOVED_IN:
-            await this._reloadIcon().catch(e => {
-                if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
-                    console.error(
-                        e,
-                        `Exception while updating ${
-                            this._getVisibleName()
-                                ? this._getVisibleName()
-                                : 'Trash icon'
-                        }: ${e.message}`);
-                }
-            });
+            await this.reloadIcon();
 
             break;
         }

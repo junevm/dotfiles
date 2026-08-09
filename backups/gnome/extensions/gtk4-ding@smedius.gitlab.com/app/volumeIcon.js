@@ -26,6 +26,8 @@ export {VolumeIcon};
 const VolumeIcon = class extends FileItemIcon {
     constructor(desktopManager, file, fileInfo, fileExtra, gioMount) {
         super(desktopManager, file, fileInfo, fileExtra, gioMount);
+        this._ejectCancellable = null;
+        this._umountCancellable = null;
 
         if (this._gioMount) {
             /* gjs doesn't handle some virtual implementations well*/
@@ -37,13 +39,17 @@ const VolumeIcon = class extends FileItemIcon {
     }
 
     _destroy() {
-        super._destroy();
+        this._destroying = true;
 
         if (this._umountCancellable)
             this._umountCancellable.cancel();
+        this._umountCancellable = null;
 
         if (this._ejectCancellable)
             this._ejectCancellable.cancel();
+        this._ejectCancellable = null;
+
+        super._destroy();
     }
 
     _getVisibleName() {
@@ -78,25 +84,26 @@ const VolumeIcon = class extends FileItemIcon {
 
 
     async eject(atWidget) {
-        if (!this._gioMount || this._ejectCancellable)
+        if (this._destroying || !this._gioMount || this._ejectCancellable)
             return;
 
         const parentWidget =  atWidget ?? this._grid._window;
         const mountOp = new Gtk.MountOperation();
         mountOp.set_parent(parentWidget);
-        this._ejectCancellable = new Gio.Cancellable();
+        const cancellable = new Gio.Cancellable();
+        this._ejectCancellable = cancellable;
 
         try {
             await this._gioMount.eject_with_operation(
                 Gio.MountUnmountFlags.NONE,
                 mountOp,
-                this._ejectCancellable
+                cancellable
             );
         } catch (e) {
             // I cannot find the exact Gio Enum, Gio.MountOperationResult
             // does not work. Shortcut :)
             // logError(e, `Mount failed: ${e.domain} ${e.code}`);
-            if (!(e.domain === 195 && e.code === 30)) {
+            if (!this._isCancellationError(e) && !(e.domain === 195 && e.code === 30)) {
                 console.error(
                     e,
                     `Exception ejecting Volume ${
@@ -107,30 +114,32 @@ const VolumeIcon = class extends FileItemIcon {
                 );
             }
         } finally {
-            this._ejectCancellable = null;
+            if (this._ejectCancellable === cancellable)
+                this._ejectCancellable = null;
         }
     }
 
     async unmount(atWidget) {
-        if (!this._gioMount || this._umountCancellable)
+        if (this._destroying || !this._gioMount || this._umountCancellable)
             return;
 
         const parentWidget = atWidget ?? this._grid._window;
         const mountOp = new Gtk.MountOperation();
         mountOp.set_parent(parentWidget);
-        this._umountCancellable = new Gio.Cancellable();
+        const cancellable = new Gio.Cancellable();
+        this._umountCancellable = cancellable;
 
         try {
             await this._gioMount.unmount_with_operation(
                 Gio.MountUnmountFlags.NONE,
                 mountOp,
-                this._umountCancellable
+                cancellable
             );
         } catch (e) {
             // I cannot find the exact Gio Enum, Gio.MountOperationResult
             // does not work. Shortcut :)
             // logError(e, `Mount failed: ${e.domain} ${e.code}`);
-            if (!(e.domain === 195 && e.code === 30)) {
+            if (!this._isCancellationError(e) && !(e.domain === 195 && e.code === 30)) {
                 console.error(
                     e,
                     `Exception unmounting Volume ${
@@ -141,7 +150,8 @@ const VolumeIcon = class extends FileItemIcon {
                 );
             }
         } finally {
-            this._umountCancellable = null;
+            if (this._umountCancellable === cancellable)
+                this._umountCancellable = null;
         }
     }
 

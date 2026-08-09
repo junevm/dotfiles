@@ -191,13 +191,15 @@ const DesktopIconsUtil = class {
      * @param {string} commandLine command to execute
      * @param {Array} environ child's environment, or <code>null</code>
      * to inherit parent's
+     * @param {Function?} onChildExit callback for child exit
      */
-    spawnCommandLine(commandLine, environ = null) {
+    spawnCommandLine(commandLine, environ = null, onChildExit = null) {
         try {
             const [, argv] = GLib.shell_parse_argv(commandLine);
-            this.trySpawn(null, argv, environ);
+            return this.trySpawn(null, argv, environ, true, onChildExit);
         } catch (e) {
             console.error(e, `${commandLine} failed with ${e}`);
+            return null;
         }
     }
 
@@ -208,8 +210,9 @@ const DesktopIconsUtil = class {
      * @param {Array} environ child's environment, or <code>null</code> to
      * inherit parent's
      * @param {bool}  async or async execution
+     * @param {Function?} onChildExit callback for child exit
      */
-    trySpawn(workdir, argv, environ = null, async = true) {
+    trySpawn(workdir, argv, environ = null, async = true, onChildExit = null) {
         /* The following code has been extracted from GNOME Shell's
         * source code in Misc.Util.trySpawn function and modified to
         * set the working directory.
@@ -251,13 +254,18 @@ const DesktopIconsUtil = class {
         }
 
         if (!async)
-            return;
+            return pid;
 
         // Dummy child watch; we don't want to double-fork internally
         // because then we lose the parent-child relationship, which
         // can break polkit.
         // See https://bugzilla.redhat.com//show_bug.cgi?id=819275
-        GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, () => {});
+        GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, (childPid, status) => {
+            if (onChildExit)
+                onChildExit(childPid, status);
+        });
+
+        return pid;
     }
 
 

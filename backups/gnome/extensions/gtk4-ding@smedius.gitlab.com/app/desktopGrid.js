@@ -942,14 +942,6 @@ const DisplayGrid = class {
         localX += this.elementSpacing;
         localY += this.elementSpacing;
 
-        this._container.put(fileItem.container, localX, localY);
-        this._setGridUse(column, row, fileItem);
-
-        fileItem.column = column;
-        fileItem.row = row;
-
-        this._fileItems.set(fileItem, [localX, localY]);
-
         const [X, Y] = this.coordinatesLocalToGlobal(localX, localY);
 
         fileItem.setCoordinates(
@@ -960,6 +952,14 @@ const DisplayGrid = class {
             this.elementSpacing,
             this
         );
+
+        this._container.put(fileItem.container, localX, localY);
+        this._setGridUse(column, row, fileItem);
+
+        fileItem.column = column;
+        fileItem.row = row;
+
+        this._fileItems.set(fileItem, [localX, localY]);
 
         /* If this file is new in the Desktop and hasn't yet
          * fixed coordinates, store the new position to ensure
@@ -1053,14 +1053,15 @@ const DisplayGrid = class {
         if (translocated)
             [X, Y] = this.coordinatesLocalToGlobal(x, y);
 
-        this._container.put(fileItem.container, x, y);
-        this._fileItems.set(fileItem, [x, y]);
         fileItem.setCoordinates(X,
             Y,
             this._elementWidth - 2 * this.elementSpacing,
             this._elementHeight - 2 * this.elementSpacing,
             this.elementSpacing,
             this);
+
+        this._container.put(fileItem.container, x, y);
+        this._fileItems.set(fileItem, [x, y]);
 
         // set column row being used for all four vertices
         this._setUseColumnRowOverlappingThis(

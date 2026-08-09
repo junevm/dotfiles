@@ -50,7 +50,6 @@ run = [
 ]
 
 [tasks.dotfiles-backup]
-alias = "backup"
 description = "backup dotfiles and obsidian vault"
 run = [
   "echo 'backing up vault...' && ~/scripts/backup-obsidian.sh",
@@ -164,12 +163,7 @@ git rm -rf --cached .
 git add .
 '''
 
-[tasks.chezmoi-open]
-alias = "chezmoi"
-description = "open chezmoi source directory in VSCode"
-run = ["code $(chezmoi source-path)"]
-
-[tasks.surge-open]
-alias = "surge"
-description = "open surge download manager"
-run = ["surge"]
+[tasks.crontab-edit]
+alias = "crontab"
+description = "Edit crontab with micro"
+run = "EDITOR=micro crontab -e"

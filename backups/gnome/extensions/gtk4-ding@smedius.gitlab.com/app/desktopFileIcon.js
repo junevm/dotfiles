@@ -94,8 +94,10 @@ const DesktopFileIcon = class extends FileItemIcon {
     }
 
     _destroy() {
+        this._destroying = true;
+
         this.desktopAppInfo = null;
-        this.actionMap = new Map();
+        this.actionMap = null;
         this._actionmenu = null;
         super._destroy();
     }
@@ -278,8 +280,11 @@ const DesktopFileIcon = class extends FileItemIcon {
     }
 
     async onAllowDisallowLaunchingClicked() {
+        if (this._destroying)
+            return;
+
         if (this._isDesktopFile)
-            this.metadataTrusted = !this.trustedDesktopFile;
+            await this.setMetadataTrusted(!this.trustedDesktopFile);
 
         await super.onAllowDisallowLaunchingClicked();
     }
@@ -312,6 +317,7 @@ const DesktopFileIcon = class extends FileItemIcon {
     }
 
     get hasActions() {
-        return this.trustedDesktopFile && this.actionMap.size > 0;
+        return this.trustedDesktopFile &&
+            Boolean(this.actionMap?.size);
     }
 };

@@ -33,21 +33,32 @@ const FileItemIcon = class extends DesktopIconItem {
         this._file = file;
         this.isStackTop = false;
         this.stackUnique = false;
+        // _reloadIconCancellable owns the full metadata refresh pipeline;
+        // _updateIconCancellable owns the low-level icon rendering pass.
+        this._reloadIconCancellable = null;
+        this._encryptionCancellable = null;
+        this._allowLaunchingCancellable = null;
+        this._savedCoordinatesCancellable = null;
+        this._dropCoordinatesCancellable = null;
+        this._setMetadataTrustedCancellable = null;
+        this._queryFileInfoCancellable = null;
 
         this.readSavedCoordinates();
         this.readDropCoordinates();
 
-        this._createIconActor();
-
         /* Set the metadata */
         this._updateMetadataFromFileInfo(fileInfo);
+        if (this.Prefs.showLinkEmblem) {
+            this._setEncryptionStatus().catch(e => {
+                if (!this._isCancellationError(e))
+                    console.error(e, `Error setting encryption status: ${e.message}`);
+            });
+        }
 
         if (this._attributeCanExecute)
             this._execLine = this.file.get_path();
         else
             this._execLine = null;
-
-        this._updateName();
         if (this._dropCoordinates)
             this.setSelected();
     }
@@ -57,26 +68,38 @@ const FileItemIcon = class extends DesktopIconItem {
      ***********************/
 
     _destroy() {
-        super._destroy();
+        this._destroying = true;
 
-        if (this._updatingIconCancellable)
-            this._updatingIconCancellable.cancel();
+        if (this._reloadIconCancellable)
+            this._reloadIconCancellable.cancel();
+        this._reloadIconCancellable = null;
 
         if (this._queryFileInfoCancellable)
             this._queryFileInfoCancellable.cancel();
+        this._queryFileInfoCancellable = null;
+
+        if (this._allowLaunchingCancellable)
+            this._allowLaunchingCancellable.cancel();
+        this._allowLaunchingCancellable = null;
 
         if (this._savedCoordinatesCancellable)
             this._savedCoordinatesCancellable.cancel();
+        this._savedCoordinatesCancellable = null;
 
         if (this._dropCoordinatesCancellable)
             this._dropCoordinatesCancellable.cancel();
+        this._dropCoordinatesCancellable = null;
 
         /* Metadata */
         if (this._setMetadataTrustedCancellable)
             this._setMetadataTrustedCancellable.cancel();
+        this._setMetadataTrustedCancellable = null;
 
         if (this._encryptionCancellable)
             this._encryptionCancellable.cancel();
+        this._encryptionCancellable = null;
+
+        super._destroy();
     }
 
     /** *********************
@@ -87,11 +110,18 @@ const FileItemIcon = class extends DesktopIconItem {
         return this._fileInfo.get_display_name();
     }
 
+    _onIconActorCreated() {
+        this._updateName();
+    }
+
     _setFileName(text) {
         this._setLabelName(text);
     }
 
     _setAccesibilityName() {
+        if (!this.container)
+            return;
+
         const visibleName = this._getVisibleName();
         const folderName = _('Folder');
         const fileName = _('File');
@@ -140,13 +170,11 @@ const FileItemIcon = class extends DesktopIconItem {
     }
 
     async _refreshMetadataAsync(cancellable) {
-        if ((cancellable && cancellable.is_cancelled()) || this._destroyed) {
-            throw new GLib.Error(Gio.IOErrorEnum,
-                Gio.IOErrorEnum.CANCELLED,
-                'Operation was cancelled');
-        } else if (!cancellable) {
+        if (!this._file)
+            return false;
+
+        if (!cancellable)
             cancellable = new Gio.Cancellable();
-        }
 
         if (this._queryFileInfoCancellable)
             this._queryFileInfoCancellable.cancel();
@@ -162,18 +190,24 @@ const FileItemIcon = class extends DesktopIconItem {
                     cancellable
                 );
 
-            if (this._destroyed)
-                return;
+            if (cancellable.is_cancelled())
+                return false;
 
             this._updateMetadataFromFileInfo(newFileInfo);
 
-            if (this._destroyed || !this._icon || !this._label)
-                return;
+            if (this.Prefs.showLinkEmblem) {
+                // The outer reload path owns the final redraw, so keep the
+                // encryption helper from triggering a nested icon update here.
+                await this._setEncryptionStatus(cancellable, false);
+            }
+
+            if (cancellable.is_cancelled() ||
+                !this._icon ||
+                !this._label)
+                return false;
 
             this._updateName();
-        } catch (e) {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                console.error(e, `Error getting file info: ${e.message}`);
+            return true;
         } finally {
             if (this._queryFileInfoCancellable === cancellable)
                 this._queryFileInfoCancellable = null;
@@ -210,37 +244,44 @@ const FileItemIcon = class extends DesktopIconItem {
         this._modifiedTime = fileInfo.get_attribute_uint64(
             Gio.FILE_ATTRIBUTE_TIME_MODIFIED
         );
-
-        if (this.Prefs.showLinkEmblem)
-            this._setEncryptionStatus().catch(logError);
     }
 
-    async _setEncryptionStatus() {
-        if (this.isEncrypted)
+    async _setEncryptionStatus(cancellable = null, updateIcon = true) {
+        if (this._isEncrypted !== undefined)
             return;
+
+        if (!this._file)
+            return;
+
+        let localCancellable = cancellable;
+        if (!localCancellable)
+            localCancellable = new Gio.Cancellable();
 
         if (this._encryptionCancellable)
             this._encryptionCancellable.cancel();
 
-        const cancellable = new Gio.Cancellable();
-        this._encryptionCancellable = cancellable;
+        this._encryptionCancellable = localCancellable;
 
         try {
+            let isEncrypted = false;
+
             switch (this._attributeContentType) {
             case 'application/x-7z-compressed':
-                this._isEncrypted =
+                if (localCancellable.is_cancelled())
+                    return;
+
+                isEncrypted =
                     this.DesktopIconsUtil.checkIf7zEncrypted(this._file);
                 break;
 
-            case 'application/pdf':
-                // eslint-disable-next-line no-case-declarations
-                const isEncrypted =
+            case 'application/pdf': {
+                const pdfIsEncrypted =
                     await this.DesktopIconsUtil.checkIfPdfEncrypted(
                         this._file,
-                        cancellable
+                        localCancellable
                     );
 
-                if (cancellable.is_cancelled() || this._destroyed)
+                if (localCancellable.is_cancelled())
                     return;
 
                 // File may have no password or null password, so we may still be
@@ -248,49 +289,58 @@ const FileItemIcon = class extends DesktopIconItem {
                 // thumbnail. Check by generating the thumbnail if needed.
                 // Don't show the locked item in this case, it is encrypted in pdf
                 // per pdf specification but a user can still read it.
-                if (isEncrypted && !this.thumbnail) {
-                    this.thumbnail =
+
+                let thumbnail = this.thumbnail;
+
+                if (pdfIsEncrypted && !this.thumbnail) {
+                    thumbnail =
                         await this.ThumbnailLoader.getThumbnail(
                             this,
-                            cancellable
+                            localCancellable
                         );
+
+                    if (localCancellable.is_cancelled())
+                        return;
+
+                    this.thumbnail = thumbnail;
                 }
 
-                this._isEncrypted = isEncrypted && !this.thumbnail;
+                isEncrypted = pdfIsEncrypted && !thumbnail;
                 break;
+            }
 
             case 'application/zip':
-                this._isEncrypted =
+                isEncrypted =
                     await this.DesktopIconsUtil.checkIfZipEncrypted(
                         this._file,
-                        cancellable
+                        localCancellable
                     );
                 break;
 
             case 'application/epub+zip':
-                this._isEncrypted =
+                isEncrypted =
                     await this.DesktopIconsUtil.checkIfZipEncrypted(
                         this._file,
-                        cancellable
+                        localCancellable
                     );
                 break;
 
             default:
-                this._isEncrypted = false;
+                isEncrypted = false;
             }
 
-            if (cancellable.is_cancelled() || this._destroyed)
+            if (localCancellable.is_cancelled())
                 return;
 
-            if (!this._isEncrypted)
+            this._isEncrypted = isEncrypted;
+
+            if (!isEncrypted)
                 return;
 
-            this.updateIcon()
-            .catch(e =>
-                console.error(`Error updating after setting encryption status ${e}`)
-            );
+            if (updateIcon)
+                await this._updateIcon(localCancellable);
         } finally {
-            if (this._encryptionCancellable === cancellable)
+            if (this._encryptionCancellable === localCancellable)
                 this._encryptionCancellable = null;
         }
     }
@@ -489,34 +539,36 @@ const FileItemIcon = class extends DesktopIconItem {
      ***********************/
 
     async _reloadIcon(cancellable) {
-        if (this._destroyed || !this._icon)
-            return;
+        if (!this._icon || !this._label)
+            return false;
 
         if (!cancellable)
             cancellable = new Gio.Cancellable();
-        this._updatingIconCancellable = cancellable;
+
+        if (this._reloadIconCancellable)
+            this._reloadIconCancellable.cancel();
+
+        this._reloadIconCancellable = cancellable;
+
         try {
-            await this._refreshMetadataAsync(cancellable);
+            const metadataUpdated =
+                await this._refreshMetadataAsync(cancellable);
+
+            if (!metadataUpdated ||
+                cancellable.is_cancelled() ||
+                !this._icon)
+                return false;
+
             await this._updateIcon(cancellable);
 
-            if (this._destroyed || !this._icon)
-                return;
+            if (cancellable.is_cancelled() || !this._icon)
+                return false;
 
             this._icon.queue_draw();
-        } catch (e) {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
-                console.error(
-                    e,
-                    `Exception while updating ${
-                        this._getVisibleName()
-                            ? this._getVisibleName()
-                            : 'updating icon'
-                    }: ${e.message}`);
-                throw e;
-            }
+            return true;
         } finally {
-            if (this._updatingIconCancellable === cancellable)
-                this._updatingIconCancellable = null;
+            if (this._reloadIconCancellable === cancellable)
+                this._reloadIconCancellable = null;
         }
     }
 
@@ -524,7 +576,7 @@ const FileItemIcon = class extends DesktopIconItem {
         let emblem = null;
         let newIconPaintable = iconPaintable;
 
-        if (this.isEncrypted && this.Prefs.showLinkEmblem) {
+        if (this.Prefs.showLinkEmblem && this._isEncrypted) {
             emblem = Gio.ThemedIcon.new('ding-icon-emblem-locked');
 
             newIconPaintable =
@@ -540,26 +592,12 @@ const FileItemIcon = class extends DesktopIconItem {
      * Class Methods *
      ***********************/
 
-    onAttributeChanged() {
-        if (this._destroyed)
+    updatedMetadata() {
+        if (this._destroying)
             return;
 
-        this._reloadIcon()
-        .catch(e =>  {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
-                console.error(
-                    e,
-                    'Exception while updating icon on Attribute Changed: ' +
-                    `${e.message}`
-                );
-            }
-        }
-        );
-    }
-
-    updatedMetadata() {
         this._reloadIcon().catch(e =>  {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
+            if (!this._isCancellationError(e)) {
                 console.error(
                     e,
                     'Exception while updating icon on Metadata Changed: ' +
@@ -567,6 +605,26 @@ const FileItemIcon = class extends DesktopIconItem {
                 );
             }
         });
+    }
+
+    async reloadIcon() {
+        if (this._destroying)
+            return false;
+
+        try {
+            return await this._reloadIcon();
+        } catch (e) {
+            if (!this._isCancellationError(e)) {
+                console.error(
+                    e,
+                    `Exception while updating ${
+                        this._getVisibleName?.() ?? 'an icon'
+                    }: ${e.message}`
+                );
+            }
+
+            return false;
+        }
     }
 
     doOpen(fileList) {
@@ -582,6 +640,9 @@ const FileItemIcon = class extends DesktopIconItem {
     }
 
     async onAllowDisallowLaunchingClicked() {
+        if (this._destroying)
+            return;
+
         /*
          * we're marking as trusted, make the file executable too. Note that we
          * do not ever remove the executable bit, since we don't know who set
@@ -599,10 +660,26 @@ const FileItemIcon = class extends DesktopIconItem {
                 newUnixMode
             );
 
-            await this._setFileAttributes(info).catch(e => {
-                if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                    throw e;
-            });
+            if (this._allowLaunchingCancellable)
+                this._allowLaunchingCancellable.cancel();
+
+            const cancellable = new Gio.Cancellable();
+            this._allowLaunchingCancellable = cancellable;
+
+            try {
+                await this._setFileAttributes(info, cancellable).catch(e => {
+                    if (!this._isCancellationError(e))
+                        throw e;
+                });
+            } finally {
+                if (this._allowLaunchingCancellable === cancellable)
+                    this._allowLaunchingCancellable = null;
+            }
+
+            if (cancellable.is_cancelled() ||
+                !this._label ||
+                !this.container)
+                return;
         }
 
         this._updateName();
@@ -667,14 +744,8 @@ const FileItemIcon = class extends DesktopIconItem {
                 'Operation was cancelled');
         }
 
-        if (updateIcon) {
-            await this._reloadIcon(cancellable).catch(e => {
-                console.error(
-                    'Error while updating icon while setting attributes'
-                );
-                throw e;
-            });
-        }
+        if (updateIcon)
+            await this._reloadIcon(cancellable);
     }
 
     async _storeCoordinates(name, coords, cancellable = null) {
@@ -703,7 +774,7 @@ const FileItemIcon = class extends DesktopIconItem {
             pos,
             cancellable
         ).catch(e => {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
+            if (!this._isCancellationError(e)) {
                 console.error(
                     e,
                     'Failed to store the desktop coordinates for ' +
@@ -732,7 +803,7 @@ const FileItemIcon = class extends DesktopIconItem {
             pos,
             cancellable
         ).catch(e => {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
+            if (!this._isCancellationError(e)) {
                 console.error(e,
                     'Failed to store the desktop coordinates for ' +
                     `${this.uri}: ${e.message}`
@@ -743,6 +814,43 @@ const FileItemIcon = class extends DesktopIconItem {
             if (this._dropCoordinatesCancellable === cancellable)
                 this._dropCoordinatesCancellable = null;
         });
+    }
+
+    async isFileEncrypted() {
+        await this._setEncryptionStatus().catch(e => {
+            if (!this._isCancellationError(e)) {
+                console.error(
+                    e,
+                    `Exception while checking encryption status for ${
+                        this._getVisibleName()
+                            ? this._getVisibleName()
+                            : 'file'
+                    }: ${e.message}`
+                );
+            }
+        });
+        return this._isEncrypted;
+    }
+
+    async setMetadataTrusted(value, updateIcon = true) {
+        if (this._setMetadataTrustedCancellable)
+            this._setMetadataTrustedCancellable.cancel();
+
+
+        const cancellable = new Gio.Cancellable();
+        this._setMetadataTrustedCancellable = cancellable;
+
+        let info = new Gio.FileInfo();
+        info.set_attribute_string('metadata::trusted',
+            value ? 'true' : 'false');
+
+        try {
+            await this._setFileAttributes(info, cancellable, updateIcon);
+            this._trusted = value;
+        } finally {
+            if (cancellable === this._setMetadataTrustedCancellable)
+                this._setMetadataTrustedCancellable = null;
+        }
     }
 
     /** *********************
@@ -818,33 +926,6 @@ const FileItemIcon = class extends DesktopIconItem {
 
     get metadataTrusted() {
         return this._trusted;
-    }
-
-    set metadataTrusted(value) {
-        this._trusted = value;
-
-        if (this._setMetadataTrustedCancellable)
-            this._setMetadataTrustedCancellable.cancel();
-
-
-        const cancellable = new Gio.Cancellable();
-        this._setMetadataTrustedCancellable = cancellable;
-
-        let info = new Gio.FileInfo();
-        info.set_attribute_string('metadata::trusted',
-            value ? 'true' : 'false');
-
-        this._setFileAttributes(info, cancellable)
-        .catch(e => {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
-                console
-                    .error(e, `Failed to set metadata::trusted: ${e.message}`);
-            }
-        })
-        .finally(() => {
-            if (cancellable === this._setMetadataTrustedCancellable)
-                this._setMetadataTrustedCancellable = null;
-        });
     }
 
     get modifiedTime() {

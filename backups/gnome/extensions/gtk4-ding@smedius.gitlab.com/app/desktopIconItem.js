@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import {Gtk, Gdk, Gio, Graphene, Gsk, GLib, Pango, GdkPixbuf}
+import {GObject, Gtk, Gdk, Gio, Graphene, Gsk, GLib, Pango, GdkPixbuf}
     from '../dependencies/gi.js';
 
 import {_} from '../dependencies/gettext.js';
@@ -27,6 +27,16 @@ import {_} from '../dependencies/gettext.js';
 export {DesktopIconItem};
 
 const PIXBUF_CONTENT_TYPES = new Set();
+
+const DesktopIconPicture = GObject.registerClass(
+class DesktopIconPicture extends Gtk.Picture {
+    vfunc_snapshot(snapshot) {
+        super.vfunc_snapshot(snapshot);
+
+        if (this._snapshotCallback)
+            this._snapshotCallback();
+    }
+});
 
 GdkPixbuf.Pixbuf
 .get_formats()
@@ -42,7 +52,6 @@ const DesktopIconItem = class {
         this.Enums = desktopManager.Enums;
         this.ThumbnailLoader = desktopManager.ThumbnailLoader;
         this._fileTypeEnum = fileTypeEnum;
-        this._queryFileInfoCancellable = null;
         this._grid = null;
         this._column = null;
         this._row = null;
@@ -56,17 +65,21 @@ const DesktopIconItem = class {
         this._dropCoordinates = null;
         this._normalCoordinates = null;
         this._monitorIndex = null;
-        this._destroyed = false;
-        this._containerId = 0;
+        this._destroying = false;
+        this._updateIconCancellable = null;
+        this._pendingIconUpdate = false;
         this._iconStateFlag = 0;
         this._labelStateFlag = 0;
         this._iconContainerEventController = null;
         this._iconContainerEventControllerEnterId = 0;
         this._iconContainerEventControllerLeaveId = 0;
-        this.dragIcon = null;
-        this.dragIconSignal = 0;
         this.thumbnail = null;
         this.thumbnailFile = null;
+        // Create the placement promise up front so snapshot and fallback
+        // paths can resolve the same instance later.
+        this.iconPlaced = new Promise(resolve => {
+            this.iconPlacedPromiseResolve = resolve;
+        });
     }
 
     /** *********************
@@ -84,13 +97,12 @@ const DesktopIconItem = class {
     }
 
     _destroy() {
-        /* Regular file data */
-        if (this._queryFileInfoCancellable)
-            this._queryFileInfoCancellable.cancel();
+        this._destroying = true;
 
         /* Icons update */
         if (this._updateIconCancellable)
             this._updateIconCancellable.cancel();
+        this._updateIconCancellable = null;
 
         if (this._icon)
             this._icon.set_paintable(null);
@@ -98,21 +110,8 @@ const DesktopIconItem = class {
         this.thumbnail = null;
         this.thumbnailFile = null;
 
-        /* Container */
-        if (this._containerId) {
-            this.container.disconnect(this._containerId);
-            this._containerId = 0;
-        }
-
-        /* DragItem */
-        if (this.dragIconSignal) {
-            this.dragIcon.disconnect(this.dragIconSignal);
-            this.dragIconSignal = 0;
-        }
-
-        if (this.dragIcon)
-            this.dragIcon.set_widget(null);
-        this.dragIcon = null;
+        if (this._icon)
+            this._icon._snapshotCallback = null;
 
         if (this._iconStateFlag) {
             this._iconContainer.disconnect(this._iconStateFlag);
@@ -155,12 +154,14 @@ const DesktopIconItem = class {
     }
 
     onDestroy() {
-        if (this._destroyed)
-            return;
-
-        this._destroyed = true;
         this._resolveIconPlaced();
         this._destroy();
+    }
+
+    _isCancellationError(error) {
+        return Boolean(
+            error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)
+        );
     }
 
     /** *********************
@@ -168,6 +169,12 @@ const DesktopIconItem = class {
      ***********************/
 
     _createIconActor() {
+        if (this.container)
+            return;
+
+        if (this.width == null || this.height == null)
+            return;
+
         this.container =
             new Gtk.Box({
                 orientation: Gtk.Orientation.VERTICAL,
@@ -177,15 +184,13 @@ const DesktopIconItem = class {
                 accessible_role: Gtk.AccessibleRole.LABEL,
             });
         this.container.add_css_class('desktop-icon-container');
-
-        this._containerId =
-            this.container.connect('destroy', () => this.onDestroy());
-
-        this._icon = new Gtk.Picture({
+        this.container.set_size_request(this.width, this.height);
+        this._icon = new DesktopIconPicture({
             can_shrink: false,
             keep_aspect_ratio: true,
             halign: Gtk.Align.CENTER,
         });
+        this._icon._snapshotCallback = this._doIconSizeAllocated.bind(this);
 
         this._iconContainer = new Gtk.Box({
             orientation: Gtk.Orientation.HORIZONTAL,
@@ -274,30 +279,35 @@ const DesktopIconItem = class {
                 }
             });
 
-        this.dragIcon = Gtk.WidgetPaintable.new(this.container);
-
-        this.dragIconSignal = this.dragIcon.connect('invalidate-size', () => {
-            this._doIconSizeAllocated();
-        });
-
         this.container.show();
+
+        if (this._isSelected)
+            this.setHighLighted();
+
+        if (this._keyboardSelected)
+            this.keyboardSelected();
+
+        if (this._pendingIconUpdate) {
+            this._pendingIconUpdate = false;
+            void this.updateIcon();
+        }
+
+        this._onIconActorCreated();
+    }
+
+    _onIconActorCreated() {
     }
 
     _doIconSizeAllocated() {
-        // If icons are hidden during stacking, they are not assigned a grid //
-        if (!this._grid)
+        if (this._destroying || !this._grid)
             return;
-
         this._calculateIconRectangle();
         this._calculateLabelRectangle();
         this._resolveIconPlaced();
     }
 
-    iconPlaced = new Promise(resolve => {
-        this.iconPlacedPromiseResolve = resolve;
-    });
-
     _resolveIconPlaced() {
+        // Gtk snapshot is run, icon is painted for the first time.
         if (!this.iconPlacedPromiseResolve)
             return;
 
@@ -306,6 +316,8 @@ const DesktopIconItem = class {
     }
 
     iconCannotBeShown() {
+        // Resolve the placement promise even when the icon never gets a snapshot.
+        // Resolve is done by desktopManager when it determines icon cannot be shown.
         this._resolveIconPlaced();
     }
 
@@ -347,13 +359,11 @@ const DesktopIconItem = class {
         this.width = width;
         this.height = height;
         this._grid = grid;
-        this.container.set_size_request(width, height);
+        this._createIconActor();
         this._label.margin_start = margin;
         this._label.margin_end = margin;
         this._label.margin_bottom = margin;
         this._iconContainer.margin_top = margin;
-        this._calculateIconRectangle();
-        this._calculateLabelRectangle();
     }
 
     getCoordinates() {
@@ -416,6 +426,10 @@ const DesktopIconItem = class {
 
     _setLabelName(text) {
         this._currentFileName = text;
+
+        if (!this._label)
+            return;
+
         this._label.label = text;
     }
 
@@ -605,6 +619,9 @@ const DesktopIconItem = class {
     }
 
     setHighLighted() {
+        if (!this.container || !this._iconContainer || !this._labelContainer)
+            return;
+
         if (!this._iconContainer
             .get_css_classes()
             .includes('desktop-icons-selected')
@@ -625,6 +642,9 @@ const DesktopIconItem = class {
     }
 
     setUnHighLighted() {
+        if (!this.container || !this._iconContainer || !this._labelContainer)
+            return;
+
         if (this._iconContainer
             .get_css_classes()
             .includes('desktop-icons-selected')
@@ -680,6 +700,9 @@ const DesktopIconItem = class {
     }
 
     _setSelectedStatus() {
+        if (!this.container || !this._iconContainer || !this._labelContainer)
+            return;
+
         if (this._isSelected) {
             this.setHighLighted();
             this.container.grab_focus();
@@ -689,6 +712,11 @@ const DesktopIconItem = class {
     }
 
     keyboardSelected() {
+        this._keyboardSelected = true;
+
+        if (!this.container || !this._iconContainer || !this._labelContainer)
+            return;
+
         if (!this._iconContainer.get_css_classes().includes('mimic-hovered')) {
             this._iconContainer.add_css_class('mimic-hovered');
             this._labelContainer.add_css_class('mimic-hovered');
@@ -696,11 +724,14 @@ const DesktopIconItem = class {
 
         if (!this.container.get_css_classes().includes('keyboard-selected'))
             this.container.add_css_class('keyboard-selected');
-
-        this._keyboardSelected = true;
     }
 
     keyboardUnSelected() {
+        this._keyboardSelected = false;
+
+        if (!this.container || !this._iconContainer || !this._labelContainer)
+            return;
+
         if (this._iconContainer.get_css_classes().includes('mimic-hovered')) {
             this._iconContainer.remove_css_class('mimic-hovered');
             this._labelContainer.remove_css_class('mimic-hovered');
@@ -708,8 +739,6 @@ const DesktopIconItem = class {
 
         if (this.container.get_css_classes().includes('keyboard-selected'))
             this.container.remove_css_class('keyboard-selected');
-
-        this._keyboardSelected = false;
     }
 
     get KeyboardSelected() {
@@ -729,8 +758,16 @@ const DesktopIconItem = class {
      ***********************/
 
     async updateIcon() {
+        if (this._destroying)
+            return;
+
+        if (!this._icon || !this._label) {
+            this._pendingIconUpdate = true;
+            return;
+        }
+
         await this._updateIcon().catch(e => {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
+            if (!this._isCancellationError(e)) {
                 console.error(e, `Exception while updating ${this._getVisibleName
                     ? this._getVisibleName() : 'an icon'}: ${e.message}`);
             }
@@ -738,13 +775,11 @@ const DesktopIconItem = class {
     }
 
     async _updateIcon(cancellable) {
-        if ((cancellable && cancellable.is_cancelled()) || this._destroyed) {
-            throw new GLib.Error(Gio.IOErrorEnum,
-                Gio.IOErrorEnum.CANCELLED,
-                'Operation was cancelled');
-        } else if (!cancellable) {
+        if (!cancellable)
             cancellable = new Gio.Cancellable();
-        }
+
+        if (!this._icon || !this._label)
+            return;
 
         if (this._updateIconCancellable)
             this._updateIconCancellable.cancel();
@@ -770,26 +805,29 @@ const DesktopIconItem = class {
                     if (await this._loadImageAsIcon(customIconFile, cancellable))
                         return;
 
-                    if (this._destroyed || !this._icon)
+                    if (cancellable.is_cancelled() || !this._icon)
                         return;
                 }
 
                 if (this.thumbnailFile && (this.thumbnailFile !== '')) {
                     const customIconFile = Gio.File.new_for_path(this.thumbnailFile);
 
-                    if (await this.FileUtils.queryExists(customIconFile)) {
-                        if (this._destroyed || !this._icon)
+                    if (await this.FileUtils.queryExists(
+                        customIconFile,
+                        cancellable
+                    )) {
+                        if (cancellable.is_cancelled() || !this._icon)
                             return;
 
                         const loadedImage =
                             await this._loadImageAsIcon(customIconFile, cancellable);
 
-                        if (loadedImage || this._destroyed)
+                        if (loadedImage || cancellable.is_cancelled())
                             return;
                     }
                 }
             } catch (error) {
-                if (error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                if (this._isCancellationError(error))
                     throw error;
 
                 console.error(error, `Error while updating icon: ${error.message}`);
@@ -799,7 +837,7 @@ const DesktopIconItem = class {
                 let pixbuf =
                     this._createEmblemedIcon(this._fileInfo.get_icon(), null);
 
-                if (cancellable.is_cancelled() || this._destroyed || !this._icon)
+                if (cancellable.is_cancelled() || !this._icon)
                     return;
 
                 this._icon.set_paintable(null);
@@ -812,14 +850,16 @@ const DesktopIconItem = class {
             if (this.Prefs.showImageThumbnails) {
                 try {
                     if (!this.thumbnail) {
-                        this.thumbnail =
+                        const thumbnail =
                             await this.ThumbnailLoader.getThumbnail(
                                 this,
                                 cancellable
                             );
 
-                        if (this._destroyed || !this._icon)
+                        if (cancellable.is_cancelled() || !this._icon)
                             return;
+
+                        this.thumbnail = thumbnail;
                     }
 
                     if (this.thumbnail !== null) {
@@ -827,11 +867,11 @@ const DesktopIconItem = class {
                         iconSet =
                             await this._loadImageAsIcon(thumbnailFile, cancellable);
 
-                        if (this._destroyed || !this._icon)
+                        if (cancellable.is_cancelled() || !this._icon)
                             return;
                     }
                 } catch (e) {
-                    if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    if (this._isCancellationError(e))
                         throw e;
 
                     console.error(
@@ -857,7 +897,7 @@ const DesktopIconItem = class {
                         this._createEmblemedIcon(this._getDefaultIcon(), null);
                 }
 
-                if (cancellable.is_cancelled() || this._destroyed || !this._icon)
+                if (cancellable.is_cancelled() || !this._icon)
                     return;
 
                 this._icon.set_paintable(null);
@@ -878,7 +918,7 @@ const DesktopIconItem = class {
             const [thumbnailData] =
                 await imageFile.load_bytes_async(cancellable);
 
-            if (this._destroyed || !this._icon)
+            if (cancellable?.is_cancelled() || !this._icon)
                 return false;
 
             const iconTexture =
@@ -901,13 +941,13 @@ const DesktopIconItem = class {
                 Math.floor(height)
             );
 
-            if (this._destroyed || !this._icon)
+            if (cancellable?.is_cancelled() || !this._icon)
                 return false;
 
             let icon = iconPaintableSnapshot.to_paintable(null);
             icon = this._addEmblemsToIconIfNeeded(icon);
 
-            if (this._destroyed || !this._icon)
+            if (cancellable?.is_cancelled() || !this._icon)
                 return false;
 
             this._icon.set_paintable(null);
@@ -915,7 +955,7 @@ const DesktopIconItem = class {
 
             return true;
         } catch (e) {
-            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+            if (this._isCancellationError(e))
                 throw e;
 
             console
@@ -1100,18 +1140,16 @@ const DesktopIconItem = class {
         return this._dropCoordinates;
     }
 
-    get isEncrypted() {
-        if (this._isEncrypted === undefined)
-            return false;
-        return this._isEncrypted;
-    }
-
     get column() {
         return this._column;
     }
 
     get row() {
         return this._row;
+    }
+
+    get labelText() {
+        return this._currentFileName ?? this._displayName ?? this._file ?? '';
     }
 
     set column(num) {
