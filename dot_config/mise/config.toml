@@ -147,7 +147,6 @@ git commit -m "$msg"
 echo "changes staged and committed with message: $msg"
 '''
 
-
 [tasks.git-pull]
 alias = "gpl"
 description = "git pull"
@@ -167,3 +166,8 @@ git add .
 alias = "crontab"
 description = "Edit crontab with micro"
 run = "EDITOR=micro crontab -e"
+
+[tasks.chezmoi-open]
+alias = "chezmoi"
+description = "open chezmoi source directory in VSCode"
+run = ["code $(chezmoi source-path)"]
