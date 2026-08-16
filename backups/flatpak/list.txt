@@ -1,4 +1,4 @@
-# Flatpak apps backup (2026-08-16 11:38:32)
+# Flatpak apps backup (2026-08-16 19:34:16)
 ai.lmstudio.lm-studio
 com.bilingify.readest
 com.bitwarden.desktop
@@ -14,7 +14,6 @@ io.github.totoshko88.RustConn
 md.obsidian.Obsidian
 net.ankiweb.Anki
 net.nokyan.Resources
-org.cryptomator.Cryptomator
 org.freedownloadmanager.Manager
 org.gimp.GIMP
 org.gnome.Papers
