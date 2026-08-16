@@ -15,8 +15,6 @@ fish_add_path ~/.cloudypad/bin
 
 # Environment variables
 set -gx CHROME_EXECUTABLE "/usr/bin/brave-browser"
-set -gx SSH_AUTH_SOCK "$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock" # if bitwarden installed via flatpak
-# set -gx SSH_AUTH_SOCK "$HOME/.bitwarden-ssh-agent.sock" # if bitwarden installed via native package manager
 
 # Allow local docker containers to connect to X server
 if command -q xhost
