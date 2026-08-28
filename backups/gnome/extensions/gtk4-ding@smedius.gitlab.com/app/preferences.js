@@ -346,7 +346,11 @@ const Preferences = class {
 
             if (key === 'icon-size') {
                 this._updateIconSize();
-                this._desktopManager.onIconSizeChanged();
+                this._desktopManager.onIconSizeChanged()
+                .catch(e => {
+                    console.log('Exception while updating desktop after ' +
+                        `icon size changed: ${e.message}\n${e.stack}`);
+                });
 
                 return;
             }
@@ -371,7 +375,11 @@ const Preferences = class {
                 this._UnstackList =
                     this.desktopSettings.get_strv('unstackedtypes');
 
-                this._desktopManager.onUnstackedTypesChanged();
+                this._desktopManager.onUnstackedTypesChanged()
+                .catch(e => {
+                    console.log('Exception while updating desktop after ' +
+                        `unstacked types changed: ${e.message}\n${e.stack}`);
+                });
 
                 return;
             }
@@ -380,7 +388,11 @@ const Preferences = class {
                 this.keepStacked =
                     this.desktopSettings.get_boolean('keep-stacked');
 
-                this._desktopManager.onkeepStackedChanged();
+                this._desktopManager.onkeepStackedChanged()
+                .catch(e => {
+                    console.log('Exception while updating desktop after ' +
+                        `keep stacked changed: ${e.message}\n${e.stack}`);
+                });
 
                 return;
             }
@@ -389,7 +401,11 @@ const Preferences = class {
                 this.keepArranged =
                     this.desktopSettings.get_boolean('keep-arranged');
 
-                this._desktopManager.onKeepArrangedChanged();
+                this._desktopManager.onKeepArrangedChanged()
+                .catch(e => {
+                    console.log('Exception while updating desktop after ' +
+                        `keep arranged changed: ${e.message}\n${e.stack}`);
+                });
 
                 return;
             }

@@ -518,7 +518,7 @@ const DingManager = class {
      */
     async _doKillAllOldDesktopProcesses() {
         const procFolder = Gio.File.new_for_path('/proc');
-        const processes = await FileUtils.enumerateDir(procFolder);
+        const processes = await FileUtils.enumerateDirOrEmpty(procFolder);
         const thisPath = `gjs ${GLib.build_filenamev([
             this.path,
             'app',

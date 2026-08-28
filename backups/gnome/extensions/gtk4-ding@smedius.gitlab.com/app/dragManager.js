@@ -596,26 +596,49 @@ const DragManager = class {
             deltaY = yDestination - yOrigin - this.localDragOffset[1];
         }
 
+        // Force the drag update onto the same serialized desktop mutation
+        // queue as geometry and file-list updates.
+        this._desktopManager.runSerializedDesktopMutation(
+            this._doMoveWithDragAndDrop.bind(
+                this,
+                deltaX,
+                deltaY,
+                keepArranged
+            )
+        ).catch(e => {
+            console.log(
+                'Exception while doing move with drag and drop: ' +
+                `${e.message}\n${e.stack}`
+            );
+        });
+
+        if (!keepArranged)
+            return;
+
+        this._desktopManager.redrawDesktop().catch(e => {
+            console.log(
+                'Exception while doing move with drag and drop and' +
+                `"Keep arranged…": ${e.message}\n${e.stack}`);
+        });
+    }
+
+    _doMoveWithDragAndDrop(deltaX, deltaY, keepArranged) {
         const fileItems = [];
+
         this._displayList.filter(item => item.isSelected).forEach(item => {
             if (!keepArranged || item.isSpecial) {
                 fileItems.push(item);
                 item.removeFromGrid({callOnDestroy: false});
-                let [x, y] = item.getCoordinates().slice(0, 3);
+                const [x, y] = item.getCoordinates().slice(0, 3);
                 item.temporarySavedPosition = [x + deltaX, y + deltaY];
             }
         });
 
-        // force to store the new coordinates
-        this._desktopManager._addFilesToDesktop(fileItems,
-            this._Enums.StoredCoordinates.OVERWRITE);
-        if (keepArranged) {
-            this._desktopManager.redrawDesktop().catch(e => {
-                console.log(
-                    'Exception while doing move with drag and drop and' +
-                    `"Keep arranged…": ${e.message}\n${e.stack}`);
-            });
-        }
+        // Force write the new coordinates
+        this._desktopManager._addFilesToDesktop(
+            fileItems,
+            this._Enums.StoredCoordinates.OVERWRITE
+        );
     }
 
     onTextDrop(dropData, [xGlobalDestination, yGlobalDestination]) {

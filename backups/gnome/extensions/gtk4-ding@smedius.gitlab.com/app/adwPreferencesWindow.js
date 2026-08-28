@@ -378,7 +378,9 @@ const aboutApp = class AboutDialog {
         );
 
         aboutDialog.set_release_notes(
-            `<p>* Adw version 100.27 for Gnome 50</p>
+            `<p>* Adw version 100.28 for Gnome 50</p>
+<ul><li>Serialize desktop-state mutations through a FIFO async queue with independent file and geometry coalescing, preventing race conditions and stale object retention, and stabilize GTK startup layout and snapshot handling.</li></ul>
+            <p>* Adw version 100.27 for Gnome 50</p>
 <ul><li>Refine AppImage launch fallback and final AppImage launch failure handling, tighten URL validation with GLib.Uri, clean up desktopIconItem removing invalidate-size signals and dragIcon and lazy Gtk widget tree creation to conserve memory</li></ul>
             <p>* Adw version 100.26 for Gnome 50</p>
 <ul><li>Fix memory leak with heavy disc activity and long Adw.Ding uptimes by serializing desktop refreshes so directory enumeration and the matching draw finish before the next refresh is queued.</li></ul>

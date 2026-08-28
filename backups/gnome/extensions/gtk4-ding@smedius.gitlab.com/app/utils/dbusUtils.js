@@ -164,7 +164,7 @@ class ProxyManager {
 
         if (interfaceXML) {
             const targetproxy =
-                new Gio.DBusProxy.makeProxyWrapper(interfaceXML);
+                Gio.DBusProxy.makeProxyWrapper(interfaceXML);
 
             try {
                 this._proxy = new targetproxy(
@@ -227,7 +227,7 @@ class ProxyManager {
 
             if (interfaceXML) {
                 const targetproxy =
-                    new Gio.DBusProxy.makeProxyWrapper(interfaceXML);
+                    Gio.DBusProxy.makeProxyWrapper(interfaceXML);
 
                 try {
                     new targetproxy(
@@ -355,7 +355,7 @@ class DBusManager {
         this._pendingSystemSignal = false;
         this._signalTimerID = 0;
 
-        let interfaceXML =
+        const interfaceXML =
             this.getInterface(
                 'org.freedesktop.DBus',
                 '/org/freedesktop/DBus',
@@ -364,8 +364,10 @@ class DBusManager {
                 true
             ); // use DBus Introspection
 
+        const dbusSystemProxy = Gio.DBusProxy.makeProxyWrapper(interfaceXML);
+
         this._dbusSystemProxy =
-            new Gio.DBusProxy.makeProxyWrapper(interfaceXML)(
+            new dbusSystemProxy(
                 Gio.DBus.system,
                 'org.freedesktop.DBus',
                 '/org/freedesktop/DBus',
@@ -377,21 +379,23 @@ class DBusManager {
 
         // Don't presume that both system and local have the same
         // interface (just in case)
-        interfaceXML = this.getInterface(
+        const localInterfaceXML = this.getInterface(
             'org.freedesktop.DBus',
             '/org/freedesktop/DBus',
             'org.freedesktop.DBus',
             false, // local bus
             true); // use DBus Introspection
 
-        this._dbusLocalProxy = new Gio.DBusProxy.makeProxyWrapper(interfaceXML)(
+        const dbusLocalProxy = Gio.DBusProxy.makeProxyWrapper(localInterfaceXML);
+
+        this._dbusLocalProxy = new dbusLocalProxy(
             Gio.DBus.session,
             'org.freedesktop.DBus',
             '/org/freedesktop/DBus',
             null
         );
 
-        let ASCinLocalBus = interfaceXML.includes('ActivatableServicesChanged');
+        const ASCinLocalBus = localInterfaceXML.includes('ActivatableServicesChanged');
 
         this._updateAllAvailabilities();
 
@@ -420,15 +424,16 @@ class DBusManager {
             );
         }
 
-        interfaceXML = this.getInterface(
+        const notifyInterfaceXML = this.getInterface(
             'org.freedesktop.Notifications',
             '/org/freedesktop/Notifications',
             'org.freedesktop.Notifications',
             false, // local bus
             false); // get interface from local code
 
+        const notifyProxy = Gio.DBusProxy.makeProxyWrapper(notifyInterfaceXML);
         this._notifyProxy =
-            new Gio.DBusProxy.makeProxyWrapper(interfaceXML)(
+            new notifyProxy(
                 Gio.DBus.session,
                 'org.freedesktop.Notifications',
                 '/org/freedesktop/Notifications',

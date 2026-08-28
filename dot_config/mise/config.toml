@@ -1,34 +1,6 @@
 [tools]
 "github:junevm/msifancontrol" = "latest"
 "github:junevm/cdns" = "latest"
-"bun" = "latest"
-"pnpm" = "latest"
-
-[tasks."youtube-download"]
-alias = "ytdl"
-description = "Download YouTube video in highest quality"
-usage = """
-arg "[url]" help="YouTube URL"
-"""
-dir = "{{cwd}}"
-run = """
-if [ -n "$usage_url" ]; then
-  URL="$usage_url"
-else
-  read -p 'YouTube URL: ' URL
-fi
-
-yt-dlp \
-  -f "bv*+ba/best" \
-  --merge-output-format mkv \
-  --embed-metadata \
-  --embed-thumbnail \
-  --add-metadata \
-  --write-info-json \
-  --output "%(title)s.%(ext)s" \
-  "$URL"
-"""
-
 
 [tasks.system-stats]
 alias = "sys"
@@ -50,9 +22,8 @@ run = [
 ]
 
 [tasks.dotfiles-backup]
-description = "backup dotfiles and obsidian vault"
+description = "backup dotfiles"
 run = [
-  "echo 'backing up vault...' && ~/scripts/backup-obsidian.sh",
   "echo 'backing up dotfiles...' && cd ~/.local/share/chezmoi && mise run backup",
 ]
 

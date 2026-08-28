@@ -991,7 +991,7 @@ const DesktopIconsUtil = class {
 
             return JSON.parse(text);
         } catch (e) {
-            if (!Gio.IOErrorEnum.matches(e, Gio.IOErrorEnum.NOT_FOUND))
+            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
                 console.error(`readJsonFile(${file.get_path?.() ?? '??'}):`, e);
 
             return null;

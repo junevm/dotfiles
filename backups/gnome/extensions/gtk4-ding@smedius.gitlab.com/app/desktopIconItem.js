@@ -31,6 +31,9 @@ const PIXBUF_CONTENT_TYPES = new Set();
 const DesktopIconPicture = GObject.registerClass(
 class DesktopIconPicture extends Gtk.Picture {
     vfunc_snapshot(snapshot) {
+        if (this.get_width() <= 0 || this.get_height() <= 0)
+            return;
+
         super.vfunc_snapshot(snapshot);
 
         if (this._snapshotCallback)

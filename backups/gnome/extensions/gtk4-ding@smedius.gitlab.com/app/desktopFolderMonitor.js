@@ -429,7 +429,7 @@ const DesktopMonitor = class extends DesktopFolderUtils {
             const getLocalFilesInfos =
                 async () => {
                     const childrenInfo =
-                        await this.FileUtils.enumerateDir(
+                        await this.FileUtils.enumerateDirOrEmpty(
                             this._desktopDir,
                             cancellable,
                             GLib.PRIORITY_DEFAULT,

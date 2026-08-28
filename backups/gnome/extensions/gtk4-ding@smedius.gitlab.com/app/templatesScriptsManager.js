@@ -88,7 +88,7 @@ const TemplatesScriptsManager = class {
         this._entriesDirMonitors = [];
         this._menuEntries = new Set();
 
-        let entriesList;
+        let entriesList = null;
 
         try {
             entriesList = await this._processDirectory(this._entriesDir,
@@ -110,17 +110,7 @@ const TemplatesScriptsManager = class {
 
     async _processDirectory(directory, cancellable, recursionLevel = 0) {
         const localRecursionLevel = recursionLevel += 1;
-        var files = null;
-
-        try {
-            files = await this._readDirectory(directory, cancellable);
-        } catch (e) {
-            console.error(e);
-            return null;
-        }
-
-        if (files === null)
-            return null;
+        const files = await this._readDirectory(directory, cancellable);
 
         let outputEntries = [];
         let menu = new Gio.Menu();

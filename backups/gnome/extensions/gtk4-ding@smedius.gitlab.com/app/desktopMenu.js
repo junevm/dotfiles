@@ -163,6 +163,7 @@ const DesktopActions = class {
         cleanUpIconsAction.connect(
             'activate',
             () => this._desktopManager.sortAllFilesFromGridsByPosition()
+                .catch(e => logError(e))
         );
         this._mainApp.add_action(cleanUpIconsAction);
 

@@ -32,7 +32,6 @@ const DEFAULT_QUERY_ATTRIBUTES = [
  * @param priority
  * @param queryAttributes
  */
-// eslint-disable-next-line consistent-return
 export async function enumerateDir(dir, cancellable = null, priority = GLib.PRIORITY_DEFAULT,
     queryAttributes = DEFAULT_QUERY_ATTRIBUTES) {
     let childrenEnumerator;
@@ -54,14 +53,35 @@ export async function enumerateDir(dir, cancellable = null, priority = GLib.PRIO
 
             children.push(...batch);
         }
-    } catch (e) {
-        if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)) {
-            console.error('Desktop directory does not exist');
-            return [];
-        }
     } finally {
         if (!childrenEnumerator?.is_closed())
             await childrenEnumerator?.close_async(priority, null);
+    }
+}
+
+/**
+ * Enumerate a directory, treating a missing directory as empty.
+ *
+ * @param dir
+ * @param cancellable
+ * @param priority
+ * @param queryAttributes
+ */
+export async function enumerateDirOrEmpty(
+    dir,
+    cancellable = null,
+    priority = GLib.PRIORITY_DEFAULT,
+    queryAttributes = DEFAULT_QUERY_ATTRIBUTES
+) {
+    try {
+        return await enumerateDir(dir, cancellable, priority, queryAttributes);
+    } catch (e) {
+        if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)) {
+            console.warn(`Directory does not exist: ${dir.get_path()}`);
+            return [];
+        }
+
+        throw e;
     }
 }
 

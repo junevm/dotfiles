@@ -46,8 +46,8 @@ const WindowManager = class {
         this._scaleFactorChanged = false;
         this._priorScaleFactor = null;
         this._hidden = false;
-        this._gridWindowsUpdateInProgress = false;
-        this._pendingDesktopList = null;
+        this._pendingGridWindowsUpdate = null;
+        this._gridWindowsUpdatePromise = null;
 
         this._registerWidgetLayerAction();
         this._dbusAdvertiseUpdate();
@@ -106,12 +106,52 @@ const WindowManager = class {
         );
     }
 
-    async updateGridWindows(newdesktoplist) {
-        if (this._gridWindowsUpdateInProgress) {
-            this._pendingDesktopList = newdesktoplist;
+    async updateGridWindows(updateData) {
+        // Keep only the latest pending request while a grid update is already
+        // running. That lets us serialize the actual work and skip bursty
+        // intermediate geometry changes that would be replaced anyway.
+        this._pendingGridWindowsUpdate = updateData;
+
+        if (this._gridWindowsUpdatePromise != null) {
+            await this._gridWindowsUpdatePromise;
             return;
         }
 
+        const updatePromise = (async () => {
+            let lastError = null;
+
+            // Drain the newest pending request one at a time so bursty
+            // geometry changes collapse down to the latest state.
+            while (this._pendingGridWindowsUpdate != null) {
+                const nextUpdate = [...this._pendingGridWindowsUpdate];
+                this._pendingGridWindowsUpdate = null;
+
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    await this._desktopManager.runSerializedDesktopMutation(
+                        this._applyGridWindowsUpdate.bind(this, nextUpdate)
+                    );
+                } catch (e) {
+                    lastError = e;
+                }
+            }
+
+            if (lastError != null)
+                throw lastError;
+        })();
+
+        const flushPromise = updatePromise.finally(() => {
+            this._gridWindowsUpdatePromise = null;
+        });
+
+        this._gridWindowsUpdatePromise = flushPromise;
+        await flushPromise;
+
+        if (this._pendingGridWindowsUpdate != null)
+            await this.updateGridWindows(this._pendingGridWindowsUpdate);
+    }
+
+    async _applyGridWindowsUpdate(newdesktoplist) {
         const changeInfo =
             this._computeDesktopChangeInfo(newdesktoplist);
 
@@ -138,15 +178,32 @@ const WindowManager = class {
             return;
         }
 
-        if (redisplay) {
-            await this._handleRedisplay({
-                monitorschangedList,
-                gridschangedList,
-                monitorschanged,
-                gridschanged,
-                redisplay,
-            });
-        }
+        if (!redisplay)
+            return;
+
+        await this._handleRedisplay({
+            monitorschangedList,
+            gridschangedList,
+            monitorschanged,
+            gridschanged,
+            redisplay,
+        });
+    }
+
+    async _handleMonitorCountChange() {
+        // monitor has been plugged in or removed.
+        this._desktopManager.clearAllLayersFromGrids();
+        await this.createGridWindows();
+
+        // WindowManager owns the serialized geometry update flow; desktopManager
+        // only applies the resulting desktop mutations.
+        await this._desktopManager.applyDesktopLayoutChange({
+            redisplay: true,
+            monitorschanged: true,
+            gridschanged: true,
+        });
+
+        this.queue_draw();
     }
 
     async _handleFirstDesktop() {
@@ -155,35 +212,6 @@ const WindowManager = class {
 
         // sanity checks and icons placement on grid will be done by
         // desktopManager in sync startup
-    }
-
-    async _handleMonitorCountChange() {
-        this._gridWindowsUpdateInProgress = true;
-        // monitor has been plugged in or removed.
-        this._desktopManager.clearAllLayersFromGrids();
-        await this.createGridWindows();
-
-        await this._desktopManager.applyDesktopLayoutChange({
-            redisplay: true,
-            monitorschanged: true,
-            gridschanged: true,
-        });
-
-        this._gridWindowsUpdateInProgress = false;
-        await this._drainPendingUpdates();
-    }
-
-    async _drainPendingUpdates() {
-        if (this._gridWindowsUpdateInProgress)
-            return;
-
-        const next = this._pendingDesktopList;
-        this._pendingDesktopList = null;
-
-        if (next != null)
-            await this.updateGridWindows(next);
-
-        this.queue_draw();
     }
 
     async _handleRedisplay({
@@ -196,7 +224,6 @@ const WindowManager = class {
         if (!redisplay)
             return;
 
-        this._gridWindowsUpdateInProgress = true;
         await this._displayDesktopSnapShots();
         this._desktopManager.clearAllLayersFromGrids({
             redisplay,
@@ -230,6 +257,9 @@ const WindowManager = class {
         // For keep arranged new coordinates are automatically written to
         // grid. However for stacked co-ordinates- we will neeed to redo the
         // old coordinates seperately in do stacks with nonitorschanged info
+        //
+        // WindowManager owns the serialized geometry update flow; desktopManager
+        // only applies the resulting desktop mutations
         await this._desktopManager.applyDesktopLayoutChange({
             redisplay,
             monitorschanged,
@@ -240,9 +270,6 @@ const WindowManager = class {
         // force a queue draw of all windows now that we have drawn the desktop,
         // and poke mutter to map the meta window.
         this._displayAnimationToLive();
-
-        this._gridWindowsUpdateInProgress = false;
-        await this._drainPendingUpdates();
     }
 
 

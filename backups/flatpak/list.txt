@@ -1,4 +1,4 @@
-# Flatpak apps backup (2026-08-23 16:19:06)
+# Flatpak apps backup (2026-08-28 16:33:35)
 ai.lmstudio.lm-studio
 com.bilingify.readest
 com.bitwarden.desktop
@@ -9,11 +9,11 @@ com.github.tchx84.Flatseal
 com.github.xournalpp.xournalpp
 com.mattjakeman.ExtensionManager
 com.rafaelmardojai.Blanket
+io.anytype.anytype
 io.github.diegopvlk.Cine
 io.github.flattool.Warehouse
 io.github.peazip.PeaZip
 io.github.totoshko88.RustConn
-md.obsidian.Obsidian
 net.ankiweb.Anki
 net.nokyan.Resources
 org.freedownloadmanager.Manager
@@ -25,3 +25,4 @@ org.inkscape.Inkscape
 org.mozilla.firefox
 org.pgadmin.pgadmin4
 org.sqlitebrowser.sqlitebrowser
+org.videolan.VLC

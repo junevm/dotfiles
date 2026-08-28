@@ -126,7 +126,7 @@ const DesktopFolderUtils = class {
 
             if (!userDirsGioFile.query_exists(null)) {
                 throw new Error(
-                    'User configuration file user-dirs.users does not exist'
+                    'User configuration file user-dirs.dir does not exist'
                 );
             }
 
