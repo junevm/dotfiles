@@ -7,12 +7,8 @@ GIT_REMOTE_URL = "git@github.com:junevm/dotfiles.git"
 RESTORE_LOG_SUBDIR = ".local/state/dotfiles"
 RESTORE_STATE_SUBDIR = ".local/state/dotfiles/restore"
 
-# Space-separated package names only.
-# Single source of truth for install targets (repo + AUR mixed allowed).
-# Installer logic uses paru only.
-INSTALL_PACKAGES = "ttf-google-sans ttf-jetbrains-mono-nerd bibata-cursor-theme-bin usage base-devel podman podman-compose podman-docker aria2 ffmpeg mise starship gnome-boxes gnome-software cronie libreoffice-fresh gufw cachyos-gaming-meta cachyos-gaming-applications nautilus-open-in-ptyxis xterm envycontrol visual-studio-code-bin glab github-cli gnome-remote-desktop rclone"
-# Put optional removals in PACMAN_REMOVE_PACKAGES.
-PACMAN_REMOVE_PACKAGES = "showtime shelly nvtop nano nano-syntax-highlighting firefox alacritty meld evince sushi papers gnome-system-monitor"
+# Packages to remove during CachyOS debloating
+PACMAN_REMOVE_PACKAGES = "showtime nvtop nano nano-syntax-highlighting firefox alacritty meld evince sushi papers gnome-system-monitor"
 
 [tasks.restore]
 description = "Restore system files and settings from backup"
@@ -85,9 +81,8 @@ log "INFO" "starting restore orchestrator"
 
 run_step "restore:checks" "restore:checks"
 run_step "restore:mirrors" "restore:mirrors"
-run_step "restore:system:packages" "restore:system:packages"
+run_step "restore:packages" "restore:packages"
 run_step "restore:system:firewall" "restore:system:firewall"
-run_step "restore:apps:flatpak" "restore:apps:flatpak"
 run_step "restore:desktop:state" "restore:desktop:state"
 run_step "restore:cron" "restore:cron"
 run_step "restore:dotfiles" "restore:dotfiles"
@@ -112,7 +107,7 @@ run = [
   ". /etc/os-release && ( [ \"${ID}\" = 'cachyos' ] || ( printf '%s' \"${PRETTY_NAME:-${NAME:-}}\" | grep -qi 'cachyos' && printf '%s' \"${ID_LIKE:-}\" | grep -qi 'arch' ) || [ \"${DOTFILES_ALLOW_UNSUPPORTED:-0}\" = '1' ] )",
   "command -v git >/dev/null",
   "command -v sudo >/dev/null",
-  "command -v paru >/dev/null",
+  "command -v shelly >/dev/null",
   "command -v cachyos-rate-mirrors >/dev/null",
   "sudo -v",
   "mkdir -p $BACKUP_DIR",
@@ -126,75 +121,46 @@ run = ["sudo cachyos-rate-mirrors"]
 description = "Apply chezmoi-managed dotfiles"
 run = ["command -v chezmoi >/dev/null", "chezmoi apply -v"]
 
-
-[tasks."restore:system:packages"]
-description = "Install system packages and desktop integrations"
+[tasks."restore:packages"]
+description = "Restore system, AUR, and Flatpak packages via Shelly, then debloat CachyOS"
 run = """
 set -u
 
 LOG_DIR="$HOME/$RESTORE_LOG_SUBDIR"
-LOG_FILE="$LOG_DIR/restore-system-packages.log"
+LOG_FILE="$LOG_DIR/restore-packages.log"
 mkdir -p "$LOG_DIR"
 
 log() {
-  printf '[%s] [restore:system:packages] [%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" "$2" | tee -a "$LOG_FILE"
+  printf '[%s] [restore:packages] [%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" "$2" | tee -a "$LOG_FILE"
 }
 
-install_list() {
-  local installer="$1"
-  local packages="$2"
-  local ok=0
-  local fail=0
-
-  for pkg in $packages; do
-    if $installer "$pkg"; then
-      ok=$((ok + 1))
-      log "INFO" "installed: $pkg"
-    else
-      fail=$((fail + 1))
-      log "WARN" "failed: $pkg"
-    fi
-  done
-
-  log "INFO" "summary for installer '$installer' => success=$ok failed=$fail"
-}
-
-install_packages() {
-  local packages="$1"
-  local ok=0
-  local fail=0
-
-  if ! command -v paru >/dev/null 2>&1; then
-    log "ERROR" "paru is required for restore:system:packages"
-    return 1
-  fi
-
-  for pkg in $packages; do
-    if paru -S --needed --noconfirm "$pkg"; then
-      ok=$((ok + 1))
-      log "INFO" "installed via paru: $pkg"
-    else
-      fail=$((fail + 1))
-      log "WARN" "failed via paru: $pkg"
-    fi
-  done
-
-  log "INFO" "summary install => paru_success=$ok paru_fail=$fail"
-}
-
-log "INFO" "starting package restore"
-install_packages "$INSTALL_PACKAGES"
-
-if systemctl --user enable --now syncthing.service >/dev/null 2>&1; then
-  log "INFO" "syncthing user service enabled"
-else
-  log "WARN" "could not enable syncthing user service"
+if ! command -v shelly >/dev/null 2>&1; then
+  log "ERROR" "shelly is required for restore:packages"
+  exit 1
 fi
 
-log "INFO" "removing optional GNOME apps"
-install_list "paru -Rns --noconfirm" "$PACMAN_REMOVE_PACKAGES"
+if [ -f "$BACKUP_DIR/packages.toml" ]; then
+  log "INFO" "importing packages backup via shelly"
+  if shelly backup --import --directory "$BACKUP_DIR" --name packages --no-confirm; then
+    log "INFO" "shelly package restore successful"
+  else
+    log "WARN" "shelly package restore encountered errors"
+  fi
+else
+  log "WARN" "packages backup file not found ($BACKUP_DIR/packages.toml); skipping shelly import"
+fi
 
-log "INFO" "package restore finished"
+log "INFO" "debloating CachyOS packages"
+for pkg in $PACMAN_REMOVE_PACKAGES; do
+  if pacman -Qi "$pkg" >/dev/null 2>&1; then
+    log "INFO" "removing package: $pkg"
+    sudo pacman -Rns --noconfirm "$pkg" || log "WARN" "failed to remove: $pkg"
+  else
+    log "INFO" "package not installed, skipping removal: $pkg"
+  fi
+done
+
+log "INFO" "package restore and debloat finished"
 """
 
 [tasks."restore:system:firewall"]
@@ -219,46 +185,11 @@ log "INFO" "allowing GSConnect traffic"
 sudo ufw allow proto tcp from 192.168.1.0/24 to any port 1714:1764 || true
 sudo ufw allow proto udp from 192.168.1.0/24 to any port 1714:1764 || true
 
-log "INFO" "allowing Syncthing traffic"
-sudo ufw allow syncthing || true
-
 log "INFO" "enabling and reloading ufw"
 sudo ufw --force enable
 sudo ufw reload
 
 log "INFO" "ufw rules applied"
-"""
-
-[tasks."restore:apps:flatpak"]
-description = "Restore Flatpak applications"
-run = """
-set -Eeuo pipefail
-
-LOG_DIR="$HOME/$RESTORE_LOG_SUBDIR"
-LOG_FILE="$LOG_DIR/restore-apps-flatpak.log"
-mkdir -p "$LOG_DIR"
-
-log() {
-  printf '[%s] [restore:apps:flatpak] [%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" "$2" | tee -a "$LOG_FILE"
-}
-
-if ! command -v flatpak >/dev/null 2>&1; then
-  log "WARN" "flatpak not installed; skipping flatpak restore"
-  exit 0
-fi
-
-if [ -f "$BACKUP_DIR/flatpak/list.txt" ]; then
-  log "INFO" "restoring flatpak applications"
-  while IFS= read -r app; do
-    if [ -n "$app" ]; then
-      log "INFO" "installing $app"
-      flatpak install -y --noninteractive flathub "$app" 2>&1 | grep -v "^Checking" | grep -v "^Accessing" || log "WARN" "failed to install $app"
-    fi
-  done < "$BACKUP_DIR/flatpak/list.txt"
-  log "INFO" "flatpak restore complete"
-else
-  log "WARN" "flatpak list not found; skipping restore"
-fi
 """
 
 [tasks."restore:desktop:state"]
@@ -275,7 +206,7 @@ run = [
 [tasks."restore:cron"]
 description = "Restore user cron jobs"
 run = [
-  "if ! command -v crontab >/dev/null 2>&1; then paru -S --needed --noconfirm cronie || true; fi",
+  "if ! command -v crontab >/dev/null 2>&1; then shelly install standard cronie --no-confirm || true; fi",
   "if command -v systemctl >/dev/null 2>&1; then sudo systemctl enable --now cronie.service || true; fi",
   "if command -v crontab >/dev/null 2>&1 && [ -f \"$BACKUP_DIR/cron/cron\" ]; then crontab $BACKUP_DIR/cron/cron; fi",
 ]
@@ -291,7 +222,7 @@ description = "Backup system files and settings"
 run = [
   "mise run backup:clean",
   "mise run backup:desktop:state",
-  "mise run backup:flatpak",
+  "mise run backup:packages",
   "mise run backup:wallpapers",
   "mise run backup:cron",
   "mise run backup:chezmoi",
@@ -312,21 +243,12 @@ run = [
   "gnome-extensions list --enabled --user | while read ext; do if [ -d \"$HOME/.local/share/gnome-shell/extensions/$ext\" ]; then cp -r \"$HOME/.local/share/gnome-shell/extensions/$ext\" $BACKUP_DIR/gnome/extensions/; fi done",
 ]
 
-[tasks."backup:flatpak"]
-description = "Backup installed Flatpak applications"
+[tasks."backup:packages"]
+description = "Backup installed standard, AUR, and Flatpak packages via Shelly"
 run = """
 set -Eeuo pipefail
-
-BACKUP_FLATPAK_DIR="$BACKUP_DIR/flatpak"
-mkdir -p "$BACKUP_FLATPAK_DIR"
-
-if ! command -v flatpak >/dev/null 2>&1; then
-  echo "# flatpak not installed" > "$BACKUP_FLATPAK_DIR/list.txt"
-  exit 0
-fi
-
-echo "# Flatpak apps backup ($(date '+%Y-%m-%d %H:%M:%S'))" > "$BACKUP_FLATPAK_DIR/list.txt"
-flatpak list --app --columns=application | tail -n +1 >> "$BACKUP_FLATPAK_DIR/list.txt" || true
+mkdir -p "$BACKUP_DIR"
+shelly backup --export --directory "$BACKUP_DIR" --name packages
 """
 
 [tasks."backup:wallpapers"]

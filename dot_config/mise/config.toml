@@ -15,11 +15,7 @@ run = "fastfetch"
 [tasks.system-upgrade]
 alias = "update"
 description = "Do a full system upgrade"
-run = [
-  "if command -v paru >/dev/null 2>&1; then paru -Syu --noconfirm; else sudo pacman -Syu --noconfirm; fi",
-  "if command -v paccache >/dev/null 2>&1; then sudo paccache -r -k 2 || true; fi",
-  "flatpak update -y && flatpak uninstall --unused -y",
-]
+run = ["shelly upgrade all --no-confirm"]
 
 [tasks.dotfiles-backup]
 description = "backup dotfiles"
