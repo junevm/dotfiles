@@ -138,3 +138,10 @@ run = "EDITOR=micro crontab -e"
 alias = "chezmoi"
 description = "open chezmoi source directory in VSCode"
 run = ["code $(chezmoi source-path)"]
+
+[tasks.git-summary]
+alias = "gsummary"
+description = "Show git summary of all repos in the current directory"
+run = '''
+for d in */; if test -d "$d.git"; printf "\n=== %s ===\n" $d; git -C $d status -s; end; end
+'''
