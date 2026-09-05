@@ -88,7 +88,6 @@ standard = [
   "gnome-software",
   "gnome-text-editor",
   "gnome-tweaks",
-  "go",
   "graphicsmagick",
   "gst-libav",
   "gst-plugin-pipewire",
