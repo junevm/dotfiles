@@ -261,7 +261,6 @@ flatpak = [
   "com.github.tchx84.Flatseal",
   "com.github.xournalpp.xournalpp",
   "com.mattjakeman.ExtensionManager",
-  "io.anytype.anytype",
   "io.github.diegopvlk.Cine",
   "io.github.flattool.Warehouse",
   "io.github.peazip.PeaZip",
