@@ -1,3 +1,9 @@
+<b><span size="large">v14.3</span></b>
+
+- Add GNOME 51 Support.
+- Show slide controls in desktop context menu.
+- Add "Show Image in Files" in desktop context menu.
+
 <b><span size="large">v14.2</span></b>
 
 - Use GResource to bundle extension svg files.

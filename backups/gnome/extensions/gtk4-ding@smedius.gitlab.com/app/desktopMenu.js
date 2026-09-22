@@ -294,6 +294,7 @@ const DesktopActions = class {
                 this._desktopManager.fileItemMenu.popupmenu ||
                 !this.activeFileItem)
                 return;
+            this._setKeyboardSelected(this.activeFileItem);
             const RemoteOperation =
                 this._DBusUtils.RemoteFileOperations;
             const activationToken = this._getSushiActivationToken(this.activeFileItem.file);
@@ -488,6 +489,9 @@ const DesktopActions = class {
     }
 
     _intDBusSignalMonitoring() {
+        this._DBusUtils.GnomeNautilusPreview.connectToProxy(
+            'g-signal', this._onPreviewSignal.bind(this));
+
         const fileOperationsManager =
             this._DBusUtils.RemoteFileOperations.fileOperationsManager;
 
@@ -507,6 +511,35 @@ const DesktopActions = class {
 
         if (fileOperationsManager.isAvailable)
             this._syncUndoRedo();
+    }
+
+    _onPreviewSignal(proxy, sender, signal, parameters) {
+        if (signal !== 'SelectionEvent' ||
+            !['(q)', '(u)'].includes(parameters.get_type_string()))
+            return;
+
+        const remote = this._DBusUtils.RemoteFileOperations;
+        if (!proxy.Visible || !remote.previewParentHandle ||
+            proxy.ParentHandle !== remote.previewParentHandle)
+            return;
+
+        const keys = {
+            [Gtk.DirectionType.LEFT]: Gdk.KEY_Left,
+            [Gtk.DirectionType.RIGHT]: Gdk.KEY_Right,
+            [Gtk.DirectionType.UP]: Gdk.KEY_Up,
+            [Gtk.DirectionType.DOWN]: Gdk.KEY_Down,
+        };
+        const key = keys[parameters.deep_unpack()[0]];
+        if (key === undefined || !this._selectFileItemInDirection(key) ||
+            !this.activeFileItem || this.activeFileItem.isStackMarker)
+            return;
+
+        // Preserve Sushi's parent and focus while replacing the preview.
+        proxy.ShowFileRemote(this.activeFileItem.uri, remote.previewParentHandle,
+            false, '', (result, error) => {
+                if (error)
+                    console.error(error, 'Error navigating preview');
+            });
     }
 
     _setClipboardContent(text) {

@@ -105,6 +105,11 @@
         <summary>Icons can be positioned anywhere on Desktop</summary>
         <description>Icons are not on a rectangular grid but can be postioned anywhere independent of grid</description>
     </key>
+    <key type="b" name="keep-pinned-widgets-below-apps">
+        <default>false</default>
+        <summary>Keep pinned widgets below application windows</summary>
+        <description>Keep pinned widgets above desktop icons but below normal application windows. When disabled, pinned widgets stay above applications. Editing a pinned widget temporarily raises it regardless of this setting.</description>
+    </key>
     <key type="b" name="show-desktop-widgets">
         <default>false</default>
         <summary>Show Desktop Widgets</summary>

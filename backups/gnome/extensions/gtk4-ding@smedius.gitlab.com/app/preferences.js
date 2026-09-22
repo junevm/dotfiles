@@ -282,6 +282,11 @@ const Preferences = class {
 
         // Desktop Settings
         this.desktopSettings.connect('changed', (obj, key) => {
+            if (key === 'keep-pinned-widgets-below-apps') {
+                this._desktopManager.widgetManager?.refreshPinnedWindowStacking();
+                return;
+            }
+
             if (key === 'dark-text-in-labels')  {
                 this.darkText =
                     this.desktopSettings.get_boolean('dark-text-in-labels');
@@ -1078,5 +1083,9 @@ const Preferences = class {
 
     get showDesktopWidgets() {
         return this.desktopWidgetsEnabled && this.desktopWidgetCapability;
+    }
+
+    get keepPinnedWidgetsBelowApps() {
+        return this.desktopSettings.get_boolean('keep-pinned-widgets-below-apps');
     }
 };

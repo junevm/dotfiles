@@ -171,7 +171,8 @@ const WidgetWindow = class {
         if (widgetEditMode)
             return `@!${x},${y};TH;I=${instanceId}`;
 
-        return `@!${x},${y};KH;I=${instanceId}`;
+        const flags = this._widgetManager.keepPinnedWidgetsBelowApps ? 'BDH' : 'KH';
+        return `@!${x},${y};${flags};I=${instanceId}`;
     }
 
     beginPinnedEdit(_options = {}) {

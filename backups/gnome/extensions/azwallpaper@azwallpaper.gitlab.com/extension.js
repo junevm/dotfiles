@@ -13,7 +13,7 @@ import {Extension, gettext as _, InjectionManager} from 'resource:///org/gnome/s
 import * as LoginManager from 'resource:///org/gnome/shell/misc/loginManager.js';
 
 import {BingWallpaperDownloader} from './bingWallpaperDownloader.js';
-import {getPrettyFileName} from './utils.js';
+import {getPrettyFileName, showImageInFiles} from './utils.js';
 import {Slideshow} from './slideshow.js';
 import {UpdateNotification} from './updateNotifier.js';
 
@@ -155,17 +155,22 @@ export default class AzWallpaper extends Extension {
     _modifyBackgroundMenu(menu) {
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem(), 4);
 
-        let menuItem = new PopupMenu.PopupMenuItem(_('Previous Wallpaper'));
-        menuItem.connect('activate', () => {
-            Logger.log('\'Previous Wallpaper\' clicked.');
-            this._slideshow.goToPreviousSlide();
+        let menuItem = new SlideControlsMenuItem(this);
+        menuItem.connect('toggle-pause', () => {
+            const isPaused = this._settings.get_boolean('slideshow-pause');
+            const newPaused = !isPaused;
+
+            this._settings.set_boolean('slideshow-pause', newPaused);
+        });
+        menuItem.connect('slide-changed', () => {
+            menu.close();
         });
         menu.addMenuItem(menuItem, 5);
 
-        menuItem = new PopupMenu.PopupMenuItem(_('Next Wallpaper'));
+        menuItem = new PopupMenu.PopupMenuItem(_('Show Image in Files'));
         menuItem.connect('activate', () => {
-            Logger.log('\'Next Wallpaper\' clicked.');
-            this._slideshow.goToNextSlide();
+            const filePath = this._slideshow.getCurrentSlide().path;
+            showImageInFiles(filePath);
         });
         menu.addMenuItem(menuItem, 6);
 
@@ -251,10 +256,11 @@ class SlideshowQuickMenu extends QuickSettings.QuickMenuToggle {
         const currentSlideInfo = new SlideInfoMenuItem(this._slideshow);
         this.menu.addMenuItem(currentSlideInfo);
 
-        this._slideControlsMenuItem = new SlideControlsMenuItem(this, extension);
+        this._slideControlsMenuItem = new SlideControlsMenuItem(extension);
+        this._slideControlsMenuItem.connectObject('toggle-pause', () => this._togglePause(), this);
         this.menu.addMenuItem(this._slideControlsMenuItem);
 
-        this.connect('clicked', () => this.togglePause());
+        this.connect('clicked', () => this._togglePause());
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -266,7 +272,7 @@ class SlideshowQuickMenu extends QuickSettings.QuickMenuToggle {
         this.menu.addMenuItem(settingsMenuItem);
     }
 
-    togglePause() {
+    _togglePause() {
         const isPaused = this._settings.get_boolean('slideshow-pause');
         const newPaused = !isPaused;
 
@@ -275,7 +281,6 @@ class SlideshowQuickMenu extends QuickSettings.QuickMenuToggle {
 
     _updatePauseState() {
         const isPaused = this._slideshow.paused;
-        this._slideControlsMenuItem.setPaused(isPaused);
         this.checked = !isPaused;
     }
 });
@@ -334,15 +339,7 @@ class SlideInfoMenuItem extends PopupMenu.PopupBaseMenuItem {
         this.connect('activate', () => {
             Main.panel.closeQuickSettings();
             const filePath = slideshow.getCurrentSlide().path;
-            if (!filePath)
-                return;
-
-            const fileUri = Gio.File.new_for_path(filePath).get_uri();
-            try {
-                Gio.AppInfo.launch_default_for_uri(fileUri, null);
-            } catch (e) {
-                console.log(e, `Failed to open URI: ${fileUri}`);
-            }
+            showImageInFiles(filePath);
         });
     }
 
@@ -354,44 +351,57 @@ class SlideInfoMenuItem extends PopupMenu.PopupBaseMenuItem {
     }
 });
 
-const SlideControlsMenuItem = GObject.registerClass(
 class SlideControlsMenuItem extends PopupMenu.PopupMenuItem {
-    _init(quickMenuToggle, extension) {
-        super._init(_('Slide Controls'), {
+    static [GObject.signals] = {
+        'toggle-pause': {},
+        'slide-changed': {},
+    };
+
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(extension) {
+        super(_('Slideshow'), {
             activate: false,
             hover: false,
         });
+
         this.track_hover = false;
         this._settings = extension.settings;
         this._slideshow = extension.slideshow;
+        this.style = 'spacing: 2px;';
 
         const goNextButton = new St.Button({
             icon_name: 'media-seek-forward-symbolic',
-            style_class: 'icon-button',
+            style_class: 'icon-button flat slide-control-button',
             x_align: Clutter.ActorAlign.END,
         });
         goNextButton.connect('clicked', () => {
             this._slideshow.goToNextSlide();
+            this.emit('slide-changed');
         });
 
         this._playPauseButton = new St.Button({
-            style_class: 'icon-button',
+            style_class: 'icon-button flat slide-control-button',
             x_align: Clutter.ActorAlign.END,
         });
         this._playPauseButton.connect('clicked', () => {
-            quickMenuToggle.togglePause();
+            this.emit('toggle-pause');
         });
 
+        this._slideshow.connectObject('notify::paused', () => this.setPaused(this._slideshow.paused), this);
         this.setPaused(this._slideshow.paused);
 
         const goPrevButton = new St.Button({
             icon_name: 'media-seek-backward-symbolic',
-            style_class: 'icon-button',
+            style_class: 'icon-button flat slide-control-button',
             x_expand: true,
             x_align: Clutter.ActorAlign.END,
         });
         goPrevButton.connect('clicked', () => {
             this._slideshow.goToPreviousSlide();
+            this.emit('slide-changed');
         });
 
         this.add_child(goPrevButton);
@@ -403,4 +413,4 @@ class SlideControlsMenuItem extends PopupMenu.PopupMenuItem {
         const iconName = paused ? 'start' : 'pause';
         this._playPauseButton.icon_name = `media-playback-${iconName}-symbolic`;
     }
-});
+}

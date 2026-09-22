@@ -588,12 +588,11 @@ export class Slideshow extends GObject.Object {
                     this._removeFromQueue(fileName, index);
                     this._saveWallpaperQueue();
                 }
-                if (currentWallpaper === fileName) {
-                    // The deleted file was the current wallpaper, go to next slide in queue
-                    this.goToNextSlide();
-                } else if (file.get_path() === slideshowDirectoryPath) {
+
+                // The slideshow directory was deleted or moved.
+                if (file.get_path() === slideshowDirectoryPath)
                     this._restart();
-                }
+
                 break;
             case Gio.FileMonitorEvent.CHANGES_DONE_HINT:
             case Gio.FileMonitorEvent.MOVED_IN: {

@@ -587,6 +587,31 @@ const WindowManager = class {
 
         raiseAction.set_enabled(DesktopWidgetCapability);
         this._desktopManager.mainApp.add_action(raiseAction);
+
+        const togglePinnedWidgetsBelowApps = new Gio.SimpleAction({
+            name: 'togglePinnedWidgetsBelowApps',
+        });
+        togglePinnedWidgetsBelowApps.connect('activate', () => {
+            const settings = this._Prefs.desktopSettings;
+            settings.set_boolean(
+                'keep-pinned-widgets-below-apps',
+                !settings.get_boolean('keep-pinned-widgets-below-apps')
+            );
+        });
+
+        const syncPinnedWidgetsAction = () => {
+            togglePinnedWidgetsBelowApps.set_enabled(
+                DesktopWidgetCapability && this._Prefs.showDesktopWidgets
+            );
+        };
+        syncPinnedWidgetsAction();
+        this._Prefs.desktopSettings.connect(
+            'changed::show-desktop-widgets',
+            syncPinnedWidgetsAction
+        );
+        this._desktopManager.mainApp.add_action(
+            togglePinnedWidgetsBelowApps
+        );
     }
 
     _getPreferredDisplayDesktop() {

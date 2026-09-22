@@ -471,6 +471,7 @@ const ShortcutManager = class {
 
     _refreshUserShortcuts() {
         this._readUserShortcuts();
+        this._migrateLegacyNavigationShortcuts();
         this._setAllAccels();
     }
 
@@ -486,6 +487,29 @@ const ShortcutManager = class {
         const value = Object.fromEntries(this._overRideMap);
         const variant = new GLib.Variant('a{ss}', value);
         this._desktopSettings.set_value('shortcutoverrides', variant);
+    }
+
+    _migrateLegacyNavigationShortcuts() {
+        const legacyNavigationShortcuts = {
+            chooseIconLeft: 'Left',
+            chooseIconRight: 'Right',
+            chooseIconUp: 'Up',
+            chooseIconDown: 'Down',
+        };
+        let migrated = false;
+
+        for (const [actionName, legacyAccel] of
+            Object.entries(legacyNavigationShortcuts)
+        ) {
+            if (this._overRideMap.get(actionName) !== legacyAccel)
+                continue;
+
+            this._overRideMap.delete(actionName);
+            migrated = true;
+        }
+
+        if (migrated)
+            this._writeUserShortcuts();
     }
 
     _setAllAccels() {

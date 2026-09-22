@@ -123,6 +123,14 @@ const WidgetManager = class {
         // overlapping loads during construction.
     }
 
+    get keepPinnedWidgetsBelowApps() {
+        return this._preferences.keepPinnedWidgetsBelowApps;
+    }
+
+    refreshPinnedWindowStacking() {
+        this._pinnedWindowManager.refreshAll();
+    }
+
     clearFromGrids(layoutChange = {}) {
         const preservePinnedWindows =
             !!layoutChange?.gridschanged &&

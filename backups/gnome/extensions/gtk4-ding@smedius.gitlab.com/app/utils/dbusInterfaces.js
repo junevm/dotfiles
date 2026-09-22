@@ -129,6 +129,23 @@ const DBusInterfaces = {
     </interface>
   </node>`,
 
+    // Sushi advertises SelectionEvent(q), but some versions emit (u).
+    // Leave that signal out of the proxy metadata and validate it in the
+    // g-signal handler so GIO accepts either wire signature.
+    'org.gnome.NautilusPreviewer2': `<node>
+    <interface name='org.gnome.NautilusPreviewer2'>
+      <method name='ShowFile'>
+        <arg name='uri' type='s' direction='in'/>
+        <arg name='windowHandle' type='s' direction='in'/>
+        <arg name='closeIfAlreadyShown' type='b' direction='in'/>
+        <arg name='activationToken' type='s' direction='in'/>
+      </method>
+      <method name='Close'/>
+      <property name='ParentHandle' type='s' access='read'/>
+      <property name='Visible' type='b' access='read'/>
+    </interface>
+  </node>`,
+
     // org.gtk.vfs.Metadata
     'org.gtk.vfs.Metadata': `<node>
     <interface name='org.gtk.vfs.Metadata'>

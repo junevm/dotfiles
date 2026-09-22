@@ -141,7 +141,7 @@ class ManageWindow {
        @!<x>,<y>;<flags>[;KEY=VALUE ...]
 
        Examples:
-       - @!120,340;KH
+       - @!120,340;BDH;I=550e8400-e29b-41d4-a716-446655440000
        - @!120,340;TH;I=550e8400-e29b-41d4-a716-446655440000
 
        Grammar:
@@ -354,6 +354,17 @@ class ManageWindow {
             this._makeWindowTypeDesktop();
         else
             this._makeWindowTypeNormal();
+
+        if (this._desktopWindow && !this.windowInstanceId &&
+            !this._raiseDesktopAsDock) {
+            this._signalIDs.push(
+                this._window.connect_after('raised', () => {
+                    if (this._desktopWindow && !this.windowInstanceId &&
+                        !this._raiseDesktopAsDock)
+                        this._syncToBottomOfStack();
+                })
+            );
+        }
 
         if (this.windowInstanceId)
             this._trackWindowPosition();

@@ -751,10 +751,10 @@ const DragManager = class {
 
     async copyOrMoveUris(uriList, destinationUri, event, params = {}) {
         if (params.forceCopy) {
-            this._DBusUtils.RemoteFileOperations.pushEvent(event);
             this._DBusUtils.RemoteFileOperations.CopyURIsRemote(
                 uriList,
-                destinationUri
+                destinationUri,
+                event
             );
             return Gdk.DragAction.COPY;
         }
@@ -782,18 +782,18 @@ const DragManager = class {
         }));
 
         if (moveFiles.length) {
-            this._DBusUtils.RemoteFileOperations.pushEvent(event);
             this._DBusUtils.RemoteFileOperations.MoveURIsRemote(
                 moveFiles,
-                destinationUri
+                destinationUri,
+                event
             );
         }
 
         if (copyFiles.length) {
-            this._DBusUtils.RemoteFileOperations.pushEvent(event);
             this._DBusUtils.RemoteFileOperations.CopyURIsRemote(
                 copyFiles,
-                destinationUri
+                destinationUri,
+                event
             );
         }
 

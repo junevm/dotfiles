@@ -144,8 +144,7 @@ const SpecialFolderIcon = class extends FileItemIcon {
                 .fileItemActions
                 .doTrash(localDrop, event);
             } else {
-                this.DBusUtils.RemoteFileOperations.pushEvent(event);
-                this.DBusUtils.RemoteFileOperations.TrashURIsRemote(fileList);
+                this.DBusUtils.RemoteFileOperations.TrashURIsRemote(fileList, event);
             }
 
             if (forceCopy)

@@ -37,6 +37,11 @@ export const DefaultShortcuts = {
         Accel: '<Control>space',
     },
     toggleWidgetLayer: {Hint: _('Toggle Widget Layer'), Accel: '<Control><Shift>L', Edit: true},
+    togglePinnedWidgetsBelowApps: {
+        Hint: _('Toggle Pinned Widgets Below Applications'),
+        Accel: '',
+        Edit: true,
+    },
     addWidget: {Hint: _('Add Widget'), Accel: '<Shift><Control>plus', Edit: true},
     // Allow navigation while holding Shift/Ctrl/Alt (and their shift combos)
     chooseIconLeft: {

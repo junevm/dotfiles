@@ -32,6 +32,26 @@ export function getPrettyFileName(filename) {
 }
 
 /**
+ * @param {string} path the path of the image to show
+ * @description Open the containing folder of the given file in the default file manager, with the file selected.
+ */
+export function showImageInFiles(path) {
+    if (!path)
+        return;
+
+    const app = Gio.app_info_get_default_for_type('inode/directory', false);
+    if (app === null)
+        return;
+
+    const file = Gio.File.new_for_path(path);
+    try {
+        app.launch([file], global.create_app_launch_context(0, -1));
+    } catch (e) {
+        console.log(`Wallpaper Slideshow - Failed to show "${path}" in the file manager: ${e}`);
+    }
+}
+
+/**
  *
  * @param {string} title notification title
  * @param {string} body notification body
