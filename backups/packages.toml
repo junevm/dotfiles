@@ -16,7 +16,6 @@ standard = [
   "bluez-obex",
   "bluez-utils",
   "bpftune-git",
-  "brave-bin",
   "btop",
   "btrfs-assistant",
   "btrfs-progs",
@@ -197,6 +196,7 @@ standard = [
   "rsync",
   "ruby-erb",
   "s-nail",
+  "scrcpy",
   "sg3_utils",
   "shelly",
   "shelly-flatpak-backend",
@@ -257,6 +257,7 @@ aur = [
 flatpak = [
   "com.bilingify.readest",
   "com.bitwarden.desktop",
+  "com.brave.Browser",
   "com.github.finefindus.eyedropper",
   "com.github.marhkb.Pods",
   "com.github.tchx84.Flatseal",
@@ -278,5 +279,6 @@ flatpak = [
   "org.gnome.font-viewer",
   "org.inkscape.Inkscape",
   "org.mozilla.firefox",
+  "org.telegram.desktop",
   "org.videolan.VLC",
 ]

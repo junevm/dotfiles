@@ -34,50 +34,70 @@ export default class MonitorInputSwitchPrefs extends ExtensionPreferences {
     }
 
     _buildMonitorGroup(settings, signalIds) {
-        const group = new Adw.PreferencesGroup({ title: _('Monitor') });
+        const group = new Adw.PreferencesGroup({ title: _('Target monitor') });
 
-        const model = new Gtk.StringList();
-        const combo = new Adw.ComboRow({
-            title: _('Target monitor'),
-            model,
-        });
-        const buses = [];
+        // One radio row per detected monitor, so long names and bus numbers
+        // are never truncated the way an AdwComboRow's label is.
+        const monitorRows = [];
+        const checks = new Map();
         let syncing = false;
 
-        const rebuild = () => {
-            const monitors = parseMonitors(settings.get_string('detected-monitors'));
+        const syncChecks = () => {
+            const target = settings.get_string('target-bus');
+            const bus = checks.has(target) ? target : checks.keys().next().value;
             syncing = true;
-            while (model.get_n_items() > 0)
-                model.remove(0);
-            buses.length = 0;
-            const entries = Object.entries(monitors);
-            if (entries.length === 0) {
-                model.append(_('None detected'));
-                combo.sensitive = false;
-            } else {
-                combo.sensitive = true;
-                for (const [bus, name] of entries) {
-                    model.append(name);
-                    buses.push(bus);
-                }
-                const target = settings.get_string('target-bus');
-                const idx = buses.indexOf(target);
-                combo.selected = idx >= 0 ? idx : 0;
-            }
+            for (const [b, check] of checks)
+                check.active = b === bus;
             syncing = false;
         };
 
-        combo.connect('notify::selected', () => {
-            if (syncing || buses.length === 0)
-                return;
-            const bus = buses[combo.selected];
-            if (bus && settings.get_string('target-bus') !== bus)
-                settings.set_string('target-bus', bus);
-        });
+        const rebuild = () => {
+            monitorRows.forEach(row => group.remove(row));
+            monitorRows.length = 0;
+            checks.clear();
+            group.remove(rescanRow);
 
-        signalIds.push(settings.connect('changed::detected-monitors', rebuild));
-        signalIds.push(settings.connect('changed::target-bus', rebuild));
-        rebuild();
+            const entries = Object.entries(
+                parseMonitors(settings.get_string('detected-monitors')));
+            if (entries.length === 0) {
+                monitorRows.push(new Adw.ActionRow({
+                    title: _('None detected'),
+                    sensitive: false,
+                }));
+            }
+            // Never shown: a GtkCheckButton only draws as a radio (and can't
+            // be unticked) when grouped, so this keeps a lone monitor's row
+            // consistent with the multi-monitor case.
+            const anchor = new Gtk.CheckButton();
+            for (const [bus, name] of entries) {
+                const check = new Gtk.CheckButton({
+                    valign: Gtk.Align.CENTER,
+                    group: anchor,
+                });
+                check.connect('toggled', () => {
+                    if (syncing || !check.active)
+                        return;
+                    if (settings.get_string('target-bus') !== bus)
+                        settings.set_string('target-bus', bus);
+                });
+                const row = new Adw.ActionRow({
+                    title: name,
+                    useMarkup: false,
+                    activatableWidget: check,
+                });
+                row.add_prefix(check);
+                row.add_suffix(new Gtk.Label({
+                    label: _('Bus %s').replace('%s', bus),
+                    cssClasses: ['dim-label'],
+                }));
+                checks.set(bus, check);
+                monitorRows.push(row);
+            }
+
+            monitorRows.forEach(row => group.add(row));
+            group.add(rescanRow);
+            syncChecks();
+        };
 
         const rescanRow = new Adw.ActionRow({
             title: _('Rescan monitors'),
@@ -94,8 +114,10 @@ export default class MonitorInputSwitchPrefs extends ExtensionPreferences {
         rescanRow.add_suffix(rescanBtn);
         rescanRow.activatableWidget = rescanBtn;
 
-        group.add(combo);
+        signalIds.push(settings.connect('changed::detected-monitors', rebuild));
+        signalIds.push(settings.connect('changed::target-bus', syncChecks));
         group.add(rescanRow);
+        rebuild();
         return group;
     }
 
