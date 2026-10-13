@@ -2,7 +2,7 @@
 set fish_greeting ""
 
 # edit files with the default application
-alias mr="mise run"
+alias m="mise run"
 alias docker="podman"
 alias ls="eza"
 
@@ -11,10 +11,9 @@ fish_add_path ~/Android/Sdk/platform-tools
 fish_add_path ~/.pub-cache/bin
 fish_add_path ~/.local/bin
 fish_add_path ~/go/bin
-fish_add_path ~/.cloudypad/bin
 
 # Environment variables
-set -gx CHROME_EXECUTABLE "/usr/bin/brave-browser"
+set -gx CHROME_EXECUTABLE "/var/lib/flatpak/exports/bin/com.brave.Browser"
 
 # Allow local docker containers to connect to X server
 if command -q xhost

@@ -243,12 +243,12 @@ standard = [
 
 aur = [
   "antigravity-cli",
-  "bibata-cursor-theme-bin",
   "debtap",
   "envycontrol",
   "google-cloud-cli",
   "jenkins-cli",
   "nautilus-open-in-ptyxis",
+  "oci-cli",
   "runit-systemd",
   "ttf-google-sans",
   "visual-studio-code-bin",

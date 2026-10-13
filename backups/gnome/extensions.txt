@@ -1,6 +1,5 @@
 appindicatorsupport@rgcjonas.gmail.com
 azwallpaper@azwallpaper.gitlab.com
-blur-my-shell@aunetx
 clipboard-indicator@tudmotu.com
 gsconnect@andyholmes.github.io
 gtk4-ding@smedius.gitlab.com
@@ -13,3 +12,4 @@ add-to-desktop@tommimon.github.com
 monitor-input-switch@nemofq.github.io
 GPU_profile_selector@lorenzo9904.gmail.com
 runcat@kolesnikov.se
+blur-my-shell@aunetx

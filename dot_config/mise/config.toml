@@ -163,12 +163,5 @@ fi
 
 yt-dlp \
   --cookies-from-browser "brave:~/.var/app/com.brave.Browser/" \
-  -f "bv*+ba/best" \
-  --merge-output-format mkv \
-  --embed-metadata \
-  --embed-thumbnail \
-  --add-metadata \
-  --write-info-json \
-  --output "%(title)s.%(ext)s" \
   "$URL"
 """
