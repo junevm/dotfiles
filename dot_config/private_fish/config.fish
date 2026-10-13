@@ -2,7 +2,7 @@
 set fish_greeting ""
 
 # edit files with the default application
-alias m="mise run"
+alias l="mise run"
 alias docker="podman"
 alias ls="eza"
 
