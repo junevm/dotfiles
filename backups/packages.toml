@@ -19,7 +19,6 @@ standard = [
   "btop",
   "btrfs-assistant",
   "btrfs-progs",
-  "cachy-update",
   "cachyos-fish-config",
   "cachyos-gaming-applications",
   "cachyos-gaming-meta",
@@ -243,6 +242,7 @@ standard = [
 
 aur = [
   "antigravity-cli",
+  "bibata-material-cursor-theme-bin",
   "debtap",
   "envycontrol",
   "google-cloud-cli",
@@ -266,7 +266,6 @@ flatpak = [
   "com.mattjakeman.ExtensionManager",
   "io.anytype.anytype",
   "io.dbeaver.DBeaverCommunity",
-  "io.github.diegopvlk.Cine",
   "io.github.flattool.Warehouse",
   "io.github.peazip.PeaZip",
   "io.github.totoshko88.RustConn",
