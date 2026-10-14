@@ -232,6 +232,7 @@ standard = [
   "which",
   "wireplumber",
   "wpa_supplicant",
+  "xdg-terminal-exec",
   "xdg-user-dirs",
   "xfsprogs",
   "xl2tpd",
