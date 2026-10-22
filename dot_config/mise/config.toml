@@ -150,7 +150,7 @@ for d in */; if test -d "$d.git"; printf "\n=== %s ===\n" $d; git -C $d status -
 
 [tasks."youtube-download"]
 alias = "ytdl"
-description = "Download YouTube video using jim60105/docker-yt-dlp"
+description = "Download YouTube video using jim60105/docker-yt-dlp with Brave cookies"
 usage = """
 arg "[url]" help="YouTube URL"
 arg "[args]..." help="Optional extra yt-dlp arguments"
@@ -184,16 +184,38 @@ if [ -t 0 ]; then
   TTY_FLAG="-it"
 fi
 
+COOKIE_MOUNTS=""
+COOKIE_ARGS=""
+
+BRAVE_FLATPAK_DIR="$HOME/.var/app/com.brave.Browser"
+BRAVE_PROFILE="$BRAVE_FLATPAK_DIR/config/BraveSoftware/Brave-Browser"
+
+if [ -d "$BRAVE_PROFILE" ]; then
+  COOKIE_MOUNTS="-v $BRAVE_FLATPAK_DIR:$BRAVE_FLATPAK_DIR:ro"
+  DBUS_SOCKET="${DBUS_SESSION_BUS_ADDRESS#unix:path=}"
+  [ -z "$DBUS_SOCKET" ] && DBUS_SOCKET="/run/user/$(id -u)/bus"
+  if [ -S "$DBUS_SOCKET" ]; then
+    COOKIE_MOUNTS="$COOKIE_MOUNTS -v $DBUS_SOCKET:$DBUS_SOCKET:ro -e DBUS_SESSION_BUS_ADDRESS=unix:path=$DBUS_SOCKET"
+  fi
+  if ! echo "${usage_args:-}" | grep -q -- '--cookies'; then
+    COOKIE_ARGS="--cookies-from-browser brave+gnomekeyring:$BRAVE_PROFILE"
+  fi
+fi
+
 if [ -n "$usage_args" ]; then
   eval "set -- $usage_args"
   "$DOCKER_BIN" run --rm $TTY_FLAG $USER_FLAGS \
     -v "$PWD:/download:Z" \
+    $COOKIE_MOUNTS \
     ghcr.io/jim60105/yt-dlp:pot \
+    $COOKIE_ARGS \
     "$@" "$URL"
 else
   "$DOCKER_BIN" run --rm $TTY_FLAG $USER_FLAGS \
     -v "$PWD:/download:Z" \
+    $COOKIE_MOUNTS \
     ghcr.io/jim60105/yt-dlp:pot \
+    $COOKIE_ARGS \
     "$URL"
 fi
 """
