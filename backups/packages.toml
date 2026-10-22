@@ -228,6 +228,7 @@ standard = [
   "vim",
   "vulkan-icd-loader",
   "vulkan-intel",
+  "waydroid",
   "wget",
   "which",
   "wireplumber",
@@ -237,7 +238,6 @@ standard = [
   "xfsprogs",
   "xl2tpd",
   "xterm",
-  "yt-dlp",
 ]
 
 aur = [

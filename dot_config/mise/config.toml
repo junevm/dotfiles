@@ -150,9 +150,10 @@ for d in */; if test -d "$d.git"; printf "\n=== %s ===\n" $d; git -C $d status -
 
 [tasks."youtube-download"]
 alias = "ytdl"
-description = "Download YouTube video in highest quality"
+description = "Download YouTube video using jim60105/docker-yt-dlp"
 usage = """
 arg "[url]" help="YouTube URL"
+arg "[args]..." help="Optional extra yt-dlp arguments"
 """
 dir = "{{cwd}}"
 run = """
@@ -162,7 +163,37 @@ else
   read -p 'YouTube URL: ' URL
 fi
 
-yt-dlp \
-  --cookies-from-browser "brave:~/.var/app/com.brave.Browser/" \
-  "$URL"
+if [ -z "$URL" ]; then
+  echo "Error: No YouTube URL provided." >&2
+  exit 1
+fi
+
+DOCKER_BIN="$(command -v docker || command -v podman)"
+if [ -z "$DOCKER_BIN" ]; then
+  echo "Error: Neither docker nor podman was found in PATH." >&2
+  exit 1
+fi
+
+USER_FLAGS="--user $(id -u):$(id -g)"
+if "$DOCKER_BIN" --version 2>&1 | grep -qi podman; then
+  USER_FLAGS="--userns=keep-id --user $(id -u):$(id -g)"
+fi
+
+TTY_FLAG="-i"
+if [ -t 0 ]; then
+  TTY_FLAG="-it"
+fi
+
+if [ -n "$usage_args" ]; then
+  eval "set -- $usage_args"
+  "$DOCKER_BIN" run --rm $TTY_FLAG $USER_FLAGS \
+    -v "$PWD:/download:Z" \
+    ghcr.io/jim60105/yt-dlp:pot \
+    "$@" "$URL"
+else
+  "$DOCKER_BIN" run --rm $TTY_FLAG $USER_FLAGS \
+    -v "$PWD:/download:Z" \
+    ghcr.io/jim60105/yt-dlp:pot \
+    "$URL"
+fi
 """
