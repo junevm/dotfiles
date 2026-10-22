@@ -8,7 +8,7 @@ RESTORE_LOG_SUBDIR = ".local/state/dotfiles"
 RESTORE_STATE_SUBDIR = ".local/state/dotfiles/restore"
 
 # Packages to remove during CachyOS debloating
-PACMAN_REMOVE_PACKAGES = "showtime nvtop nano nano-syntax-highlighting firefox alacritty meld evince sushi papers gnome-system-monitor "
+PACMAN_REMOVE_PACKAGES = "showtime nvtop nano nano-syntax-highlighting firefox alacritty meld evince sushi papers gnome-system-monitor cachy-update"
 
 [tasks.restore]
 description = "Restore system files and settings from backup"

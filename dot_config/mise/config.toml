@@ -1,6 +1,7 @@
 [tools]
 "github:junevm/msifancontrol" = "latest"
 "github:junevm/cdns" = "latest"
+node = "lts"
 
 [tasks.system-stats]
 alias = "sys"
