@@ -228,7 +228,6 @@ standard = [
   "vim",
   "vulkan-icd-loader",
   "vulkan-intel",
-  "waydroid",
   "wget",
   "which",
   "wireplumber",
