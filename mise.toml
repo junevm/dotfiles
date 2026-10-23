@@ -141,7 +141,7 @@ fi
 
 if [ -f "$BACKUP_DIR/packages.toml" ]; then
   log "INFO" "importing packages backup via shelly"
-  if shelly backup --import --directory "$BACKUP_DIR" --name packages --no-confirm; then
+  if shelly backup --import --directory "$BACKUP_DIR" --name packages --no-confirm --yes; then
     log "INFO" "shelly package restore successful"
   else
     log "WARN" "shelly package restore encountered errors"
