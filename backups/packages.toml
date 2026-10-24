@@ -260,7 +260,6 @@ aur = [
 flatpak = [
   "com.bilingify.readest",
   "com.bitwarden.desktop",
-  "com.brave.Browser",
   "com.github.finefindus.eyedropper",
   "com.github.marhkb.Pods",
   "com.github.tchx84.Flatseal",
@@ -269,6 +268,7 @@ flatpak = [
   "com.vixalien.sticky",
   "io.anytype.anytype",
   "io.dbeaver.DBeaverCommunity",
+  "io.github.diegopvlk.Cine",
   "io.github.flattool.Warehouse",
   "io.github.totoshko88.RustConn",
   "net.ankiweb.Anki",
@@ -281,5 +281,4 @@ flatpak = [
   "org.inkscape.Inkscape",
   "org.mozilla.firefox",
   "org.telegram.desktop",
-  "org.videolan.VLC",
 ]
