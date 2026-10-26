@@ -208,6 +208,7 @@ standard = [
   "snapper",
   "snapshot",
   "sof-firmware",
+  "speech-dispatcher",
   "starship",
   "sudo",
   "switcheroo-control",

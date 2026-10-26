@@ -16,7 +16,7 @@ run = "fastfetch"
 [tasks.system-upgrade]
 alias = "update"
 description = "Do a full system upgrade"
-run = ["shelly upgrade all --no-confirm"]
+run = ["yes | shelly upgrade all --no-confirm"]
 
 [tasks.dotfiles-backup]
 description = "backup dotfiles"
