@@ -270,7 +270,8 @@ run = [
 description = "backup chezmoi-managed dotfiles"
 run = [
   # re-add files that change outside of chezmoi (like bookmarks) to update the source state
-  "chezmoi re-add ~/.config/BraveSoftware/Brave-Browser/Default/Bookmarks",
+  "chezmoi add '~/.var/app/org.freedownloadmanager.Manager/data/Softdeluxe/Free Download Manager/settings.ini'",
+  "chezmoi add '~/.config/heroic/config.json'",
 
   # apply manually made changes to source state and push to remote
   "chezmoi apply -v",
