@@ -14,6 +14,7 @@ fish_add_path ~/go/bin
 
 # Environment variables
 set -gx CHROME_EXECUTABLE "/var/lib/flatpak/exports/bin/com.brave.Browser"
+set -gx GITLAB_DANGEROUSLY_SKIP_PERMISSIONS "1"
 
 # Allow local docker containers to connect to X server
 if command -q xhost
