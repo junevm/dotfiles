@@ -1,4 +1,2 @@
-azwallpaper@azwallpaper.gitlab.com
 copyous@boerdereinar.dev
 gsconnect@andyholmes.github.io
-blur-my-shell@aunetx

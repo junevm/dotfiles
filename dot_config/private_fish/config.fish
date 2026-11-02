@@ -9,7 +9,6 @@ alias ls="eza"
 # Add paths
 fish_add_path ~/Android/Sdk/platform-tools
 fish_add_path ~/.pub-cache/bin
-fish_add_path ~/.local/bin
 fish_add_path ~/go/bin
 
 # Environment variables
