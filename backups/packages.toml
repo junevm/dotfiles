@@ -166,6 +166,7 @@ standard = [
   "openssh",
   "os-prober",
   "pacman-contrib",
+  "paprefs",
   "paru",
   "pavucontrol",
   "perl",
@@ -262,6 +263,7 @@ aur = [
 flatpak = [
   "com.bilingify.readest",
   "com.bitwarden.desktop",
+  "com.brave.Browser",
   "com.github.finefindus.eyedropper",
   "com.github.marhkb.Pods",
   "com.github.tchx84.Flatseal",
@@ -282,7 +284,6 @@ flatpak = [
   "org.gnome.SoundRecorder",
   "org.gnome.font-viewer",
   "org.inkscape.Inkscape",
-  "org.mozilla.firefox",
   "org.telegram.desktop",
   "studio.planetpeanut.Bobby",
 ]

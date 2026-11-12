@@ -10,6 +10,7 @@ alias ls="eza"
 fish_add_path ~/Android/Sdk/platform-tools
 fish_add_path ~/.pub-cache/bin
 fish_add_path ~/go/bin
+fish_add_path ~/.local/bin
 
 # Environment variables
 set -gx CHROME_EXECUTABLE "/var/lib/flatpak/exports/bin/com.brave.Browser"

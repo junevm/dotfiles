@@ -193,12 +193,14 @@ log "INFO" "ufw rules applied"
 """
 
 [tasks."restore:desktop:state"]
-description = "Restore GNOME"
+description = "Restore GNOME and wallpapers"
 run = [
   # gnome and all
   "mkdir -p ~/.local/share/gnome-shell/extensions",
   "if [ -d \"$BACKUP_DIR/gnome/extensions\" ]; then cp -r $BACKUP_DIR/gnome/extensions/* ~/.local/share/gnome-shell/extensions/ 2>/dev/null || true; fi",
   "if command -v dconf >/dev/null 2>&1 && [ -f \"$BACKUP_DIR/gnome/settings.ini\" ]; then dconf load /org/gnome/ < $BACKUP_DIR/gnome/settings.ini || true; fi",
+  "rm -rf ~/Pictures/Wallpapers && mkdir -p ~/Pictures/Wallpapers",
+  "cp -r $BACKUP_DIR/wallpapers/* ~/Pictures/Wallpapers/ 2>/dev/null || true",
 ]
 
 [tasks."restore:cron"]
@@ -221,6 +223,7 @@ run = [
   "mise run backup:clean",
   "mise run backup:desktop:state",
   "mise run backup:packages",
+  "mise run backup:wallpapers",
   "mise run backup:cron",
   "mise run backup:chezmoi",
 ]
@@ -247,6 +250,14 @@ set -Eeuo pipefail
 mkdir -p "$BACKUP_DIR"
 shelly backup --export --directory "$BACKUP_DIR" --name packages
 """
+
+[tasks."backup:wallpapers"]
+description = "Backup wallpapers directory"
+run = [
+  "rm -rf $BACKUP_DIR/wallpapers",
+  "mkdir -p $BACKUP_DIR/wallpapers",
+  "cp -r ~/Pictures/Wallpapers/* $BACKUP_DIR/wallpapers/ 2>/dev/null || true",
+]
 
 [tasks."backup:cron"]
 description = "Backup user crontab"
